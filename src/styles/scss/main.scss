@@ -1,8 +1,16 @@
 @import 'variables';
 @import 'mixins';
+@import 'popup';
+@import 'header';
+@import 'service';
+@import 'top';
+@import 'testimonials';
+@import 'contact';
+@import 'footer';
 
 html {
   box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 
 *,
@@ -25,9 +33,7 @@ button {
   border: none;
   border-radius: 10px;
   cursor: pointer;
-  color: $button-text-color;
-  font-size: 20px;
-  padding: 13px 77px;
+  background: transparent;
 }
 
 .container {
@@ -35,13 +41,41 @@ button {
   margin: 0 auto;
   padding-left: 16px;
   padding-right: 16px;
-
+  
   @include respond(tablet) {
     max-width: 1064px;
   }
 
+  @include respond(995) {
+    max-width: 1000px;
+  }
+
+  @include respond(740) {
+    max-width: 800px;
+  }
+
   @include respond(mobile) {
     max-width: 360px;
+  }
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  z-index: 100;
+}
+
+.overlay.active {
+  @include respond(740) {
+    opacity: 10;
+    visibility: visible;
   }
 }
 
@@ -54,170 +88,11 @@ body {
 
 .subtitle {
   text-align: center;
-  font-size: 48px;
-}
-
-.header__inner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  min-height: 110px;
-}
-
-.menu__list {
-  display: flex;
-  gap: 0 50px;
-}
-
-.top {
-  background: linear-gradient(to top right, rgba(227, 242, 253, 1), rgba(255, 255, 255, 1));
-}
-
-.top__inner {
-  min-height: 665px;
-  padding-top: 120px;
-
-  @include respond(995) {
-    padding-top: 50px;
-    min-height: 0;
-  }
-}
-
-.top__title {
-  font-family: Roboto, sans-serif;
-  font-size: 48px;
-  font-weight: 400;
-  margin-bottom: 20px;
-  max-width: 533px;
-}
-
-.top__text {
-  margin-bottom: 25px;
-  max-width: 446px;
-
-  @include respond(995) {
-    font-size: 30px;
-    min-width: 670px;
-    margin-bottom: 70px;
-  }
+  font-size: 40px;
 
   @include respond(740) {
-    font-size: 25px;
-    min-width: 670px;
-    margin-bottom: 70px;
+    font-size: 32px;
   }
-}
-
-.main__button {
-  width: 345px;
-  height: 50px;
-  background-color: $button-background-color;
-
-  @include respond(995) {
-    width: 670px;
-    height: 60px;
-  }
-
-  @include respond(740) {
-    font-size: 30px;
-    max-width: 100%;
-    margin-bottom: 70px;
-  }
-
-  // @media (max-width: 900px) {
-  //   widt
-  // }
-}
-
-.main__inform {
-  display: flex;
-  justify-content: space-between;
-
-  @include respond(995) {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  @include respond(995) {
-    padding-left: 60px;
-  }
-}
-
-.top__img {
-  width: 100%;
-  max-width: 606px;
-
-  .top__img--img {
-    width: 100%;
-    height: auto;
-    display: block;
-  }
-  
-  @include respond(1350) {
-    margin-top: 30px;
-  }
-
-  @include respond(tablet) {
-   max-width: 500px;
-  }
-
-  @include respond(995) {
-    margin-top: 0;
-  }
-
-  @include respond(mobile) {
-    max-width: 360px;
-  }
-}
-// @media (max-width: 1280px) {
-  
-// }
-
-// @media (max-width: 393px) {
-  
-// }
-
-.services__list {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
-  flex-wrap: wrap;
-  gap: 50px;
-  margin-top: 60px;
-}
-
-.services__item {
-  display: flex;
-  align-items: center;
-  flex-direction: column;
-  width: 220px;
-  height: 223px;
-  padding: 20px 40px;
-  background-color: $service-item-color;
-  border-radius: 8px;
-  box-shadow: 0px 4px 12px 0px rgba(0, 0, 0, 0.10);
-
-  &--text {
-    text-align: center;
-    font-family: Montserrat, sans-serif;
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 500;
-    margin-top: 10px;
-  }
-
-  &--img{
-    text-align: center;
-  }
-}
-
-.services__info {
-  padding-top: 100px;
-  padding-bottom: 100px;
-}
-
-.services {
-  background: #F4F9FF;
 }
 
 .subtext {
@@ -225,31 +100,4 @@ body {
   line-height: 1.3;
   font-size: 20px;
   font-weight: 300;
-}
-
-.testimonials__subtext {
-  text-align: center;
-}
-
-.testimonials__item {
-  width: 480px;
-  height: 220px;
-  border-radius: 9px;
-  background: #F4F9FF;
-  padding-top: 35px;
-  padding-left: 30px;
-  flex: 0 0 auto;
-}
-
-.testimonials__list {
-  display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  gap: 30px;
-  padding-top: 70px;
-}
-
-.testimonials {
-  padding-top: 100px;
-  padding-bottom: 100px;
 }

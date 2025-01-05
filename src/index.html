@@ -11,29 +11,60 @@
   <title>Document</title>
 </head>
 <body>
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <button class="menu__close-popup">
+        <img src="../img/close.svg" alt="menu-close">
+      </button>
+      <p class="subtext contact__title">
+        Have questions or need urgent assistance? Contact our team today!<br>
+        We're here to help you with all your washing machine repair needs.
+      </p>
+      <form action="submit" method="post" class="form">
+        <input type="text" class="form__input" placeholder="Your name">
+        <input type="email" class="form__input" placeholder="Your email">
+        <textarea class="form__textarea" placeholder="Your message" rows="4"></textarea>
+        <!-- <div class="g-recaptcha" data-sitekey="your-site-key"></div> -->
+        <button type="submit" class="button form__button">SUBMIT REQUEST</button>
+      </form>
+    </div>
+  </div>
+  <div class="overlay"></div>
+  <div class="overlay-popup"></div>
   <header class="header">
     <div class="container">
       <div class="header__inner">
-        <a class="logo">
+        <a class="logo" href="#main">
           <img src="../img/logo.svg" alt="logo" >
         </a>
+        <button class="burger">
+          <img src="../img/burger.svg" alt="menu">
+        </button>
         <nav class="menu">
           <ul class="menu__list">
-            <li class="menu__item">
-              <a class="menu__link" href="#">services</a>
+            <li>
+              <button class="menu__close">
+                <img src="../img/close.svg" alt="menu-close">
+              </button>
             </li>
             <li class="menu__item">
-              <a class="menu__link" href="#">testimonials</a>
+              <a class="menu__link" href="#services">services</a>
             </li>
             <li class="menu__item">
-              <a class="menu__link" href="#">contact us</a>
+              <a class="menu__link" href="#testimonials">testimonials</a>
+            </li>
+            <li class="menu__item">
+              <a class="menu__link" href="#contact">contact</a>
+            </li>
+            <li>
+              <button class="button main__button mobile-menu-button">REQUEST SERVICE</button>
             </li>
           </ul>
         </nav>
       </div>
     </div>
   </header>
-  <main class="main">
+  <main class="main" id="main">
     <section class="top">
       <div class="container">
         <div class="main__inform">
@@ -55,7 +86,7 @@
         </div>
       </div>
     </section>
-    <section class="services">
+    <section class="services" id="services">
       <div class="container">
         <div class="services__info">
           <h2 class="subtitle">Our services</h2>
@@ -86,7 +117,7 @@
         </div>
       </div>
     </section>
-    <section class="testimonials">
+    <section class="testimonials" id="testimonials">
       <div class="container">
         <div class="testimonials__info">
           <h2 class="subtitle">What our customers are saying</h2>
@@ -126,6 +157,38 @@
         </div>
       </div>
     </section>
+    <section class="contact" id="contact">
+      <div class="container">
+        <div class="contact__info">
+          <h2 class="subtitle contact__title">Get in touch with us</h2>
+          <p class="subtext contact__title">
+            Have questions or need urgent assistance? Contact our team today!<br>
+            We're here to help you with all your washing machine repair needs.
+          </p>
+          <div class="contact__container">
+            <form action="submit" method="post" class="form">
+              <input type="text" class="form__input" placeholder="Your name">
+              <input type="email" class="form__input" placeholder="Your email">
+              <textarea class="form__textarea" placeholder="Your message" rows="4"></textarea>
+              <!-- <div class="g-recaptcha" data-sitekey="your-site-key"></div> -->
+              <button type="submit" class="button form__button">SUBMIT REQUEST</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
   </main>
+  <footer>
+    <div class="container">
+      <div class="footer">
+        <p class="footer__text">Call Us:   +1 (555) 123-4567</p>
+        <p class="footer__text">Email:     support@repairspin.com</p>
+        <p class="footer__text">Business Hours: Monday–Friday: 8:00 AM – 8:00 PM, Saturday: 9:00</p>
+      </div>
+    </div>
+  </footer>
+  <script src="../js/index.js"></script>
+  <script src="../js/popup.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
 </html>
