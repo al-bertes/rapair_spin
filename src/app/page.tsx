@@ -4,6 +4,7 @@ import { useState } from "react";
 import OutsideClickHandler from 'react-outside-click-handler';
 import { motion, AnimatePresence } from 'framer-motion';
 import { testimonials } from './constants';
+import ContactForm from "./form";
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPopupOpen, setIsPoupOpen] = useState(false);
@@ -55,22 +56,7 @@ export default function Home() {
            <p className="subtext contact__title">
              Have questions or need urgent assistance? Contact our team today!
            </p>
-           {/* <form action="submit" method="post" className="form"> */}
-           <form className="form">
-             <input type="text" className="form__input" placeholder="Your name" />
-             <input type="email" className="form__input" placeholder="Your email" />
-             <textarea
-               className="form__textarea"
-               placeholder="Your message"
-               rows={4}
-             ></textarea>
-             {/* Uncomment and configure reCAPTCHA if needed */}
-             {/* <div className="g-recaptcha" data-sitekey="your-site-key"></div> */}
-             {/* <button type="submit" className="button form__button" onClick={closePopup}> */}
-             <button type="submit" className="button form__button" onClick={closePopup}>
-               SUBMIT REQUEST
-             </button>
-           </form>
+           <ContactForm closePopup={closePopup}/>
          </div>
       </motion.div>
 )}
@@ -79,7 +65,7 @@ export default function Home() {
 
       {/* Overlay */}
       <div className={`overlay${isMenuOpen ? ' active' : ''}`}></div>
-      <div className={`overlay-popup ${isPopupOpen ? 'active' : ''}`}></div>
+      <div className={`overlay-popup${isPopupOpen ? ' active' : ''}`}></div>
 
       {/* Header */}
       <header className="header">
@@ -227,16 +213,15 @@ export default function Home() {
               We&apos;re here to help you with all your washing machine repair needs.
             </p>
             <div className="contact__container">
-              <form action="submit" method="post" className="form">
+              {/* <form action="submit" method="post" className="form">
                 <input type="text" className="form__input" placeholder="Your name" />
                 <input type="email" className="form__input" placeholder="Your email" />
                 <textarea className="form__textarea" placeholder="Your message" rows={4}></textarea>
-                {/* Uncomment and configure reCAPTCHA if needed */}
-                {/* <div className="g-recaptcha" data-sitekey="your-site-key"></div> */}
                 <button type="submit" className="button form__button">
                   SUBMIT REQUEST
                 </button>
-              </form>
+              </form> */}
+              <ContactForm closePopup={undefined}/>
             </div>
           </div>
         </div>
