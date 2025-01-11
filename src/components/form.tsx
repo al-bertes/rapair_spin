@@ -10,11 +10,29 @@ const schema = yup.object().shape({
   });
 
 
-  export default function ContactForm(props: { closePopup: MouseEventHandler<HTMLButtonElement> | undefined; }) {
+  export default function ContactForm(props: any) {
     // const recaptchaRef = useRef<ReCAPTCHA>(null);
-    const onSubmit = (values: unknown) => {
-      console.log(values);
+    const onSubmit = async (values: { name: string; email: string; message: string }, { resetForm }: any) => {
+      try {
+        const response = await fetch("/api/contact", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        });
+    
+        if (response.ok) {
+          props.closePopup();
+          resetForm()
+        } else {
+          const errorData = await response.json();
+        }
+      } catch (error) {
+        console.error("Error submitting form:", error);
+      }
     };
+    
   
     return (
         <Formik
@@ -58,7 +76,7 @@ const schema = yup.object().shape({
               />
               <ErrorMessage name="message" component="p" className="form__error" />
             </>
-            <button type="submit" className="button form__button" onClick={props.closePopup}>
+            <button type="submit" className="button form__button">
               SUBMIT REQUEST
             </button>
           </Form>

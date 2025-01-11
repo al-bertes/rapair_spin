@@ -4,7 +4,7 @@ import { useState } from "react";
 import OutsideClickHandler from 'react-outside-click-handler';
 import { motion, AnimatePresence } from 'framer-motion';
 import { testimonials } from './constants';
-import ContactForm from "./form";
+import ContactForm from "../components/form";
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPopupOpen, setIsPoupOpen] = useState(false);
@@ -123,9 +123,7 @@ export default function Home() {
         <div className="container">
           <div className="main__inform">
             <div className="top__inner">
-              <h1 className="top__title">
-                Comprehensive Washing Machine Repair Services
-              </h1>
+            <h1>Washing Machine Repairs in Minneapolis and Nearby Cities</h1>
               <p className="subtext top__text">
                 Your washing machine deserves the best care. <br />
                 Our trusted experts provide fast diagnostics, affordable repairs, and exceptional service.
@@ -137,7 +135,7 @@ export default function Home() {
             <div className="top__img">
               <Image
                 className="top__img--img"
-                src="/img/main-picture-tablet.svg"
+                src="/img/main-picture.webp"
                 alt="Illustration of washing machine repair process"
                 width={500}
                 height={300}
@@ -158,7 +156,7 @@ export default function Home() {
                   <li key={index} className="services__item">
                     <Image
                       className="services__item--img"
-                      src={`/img/sercise${index}.svg`}
+                      src={`/img/sercise${index}.webp`}
                       alt={`Service ${index}`}
                       width={100}
                       height={100}
