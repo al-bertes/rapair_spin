@@ -5,6 +5,7 @@ import OutsideClickHandler from 'react-outside-click-handler';
 import { motion, AnimatePresence } from 'framer-motion';
 import { testimonials } from './constants';
 import ContactForm from "../components/form";
+
 export default function Home() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isPopupOpen, setIsPoupOpen] = useState(false);
@@ -219,7 +220,7 @@ export default function Home() {
                   SUBMIT REQUEST
                 </button>
               </form> */}
-              <ContactForm closePopup={undefined}/>
+              <ContactForm closePopup={closePopup}/>
             </div>
           </div>
         </div>
