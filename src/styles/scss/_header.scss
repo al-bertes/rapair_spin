@@ -2,8 +2,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  min-height: 110px;
+  min-height: 75px;
   border-bottom: #333 1px solid;
+
 }
 
 .menu__list {
@@ -77,5 +78,11 @@
   } 
   @include respond(530) {
     font-size: 17px;
+  }
+}
+
+.logo {
+  img {
+    display: block;
   }
 }

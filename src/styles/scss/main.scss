@@ -37,6 +37,8 @@ button {
 }
 
 .container {
+  overflow: hidden;
+  background-color: red($color: #000000);
   max-width: 1192px;
   margin: 0 auto;
   padding-left: 16px;

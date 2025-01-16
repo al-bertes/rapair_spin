@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Repair Spin - Washing Machine Repairs in Minneapolis",
-  description: "Fast and professional washing machine repair services in Minneapolis and nearby areas. Call (555) 123-4567 for reliable service!"
+  title: "Pavel's Appliance Repair - Appliance Repair Services in Twin Cities",
+  description:
+    "Fast and professional repair services for washers, dryers, refrigerators, dishwashers, ovens, and stoves in Minneapolis and nearby areas. Call (555) 123-4567 for reliable service!",
 };
 
 export default function RootLayout({
@@ -26,31 +27,35 @@ export default function RootLayout({
   return (
     <html lang="en">
       <Head>
-        <title>Repair Spin - Washing Machine Repairs in Minneapolis</title>
+        <title>Pavel&apos;s Appliance Repair | Reliable Appliance Repair in Twin Cities</title>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <meta
           name="description"
-          content="Fast and professional washing machine repair services in Minneapolis and nearby areas. Call (555) 123-4567 now!"
+          content="Fast and reliable appliance repair services in Twin Cities and nearby areas. We fix washers, dryers, refrigerators, ovens, and dishwashers. Call (555) 123-4567 today!"
         />
         <meta
           name="keywords"
-          content="washing machine repair, Minneapolis, Minnesota, Eden Prairie, Bloomington, Plymouth, Shakopee, Richfield, Minnetonka, Medina"
+          content="appliance repair, washer repair, dryer repair, refrigerator repair, oven repair, dishwasher repair, Minneapolis, Minnesota"
         />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="canonical" href="https://www.repairspin.com" />
-        <meta property="og:title" content="Repair Spin - Washing Machine Repairs" />
+        <link rel="canonical" href="https://www.pavelsappliancerepair.com" />
+        <meta property="og:title" content="Pavel&apos;s Appliance Repair | Reliable Appliance Repair in Twin Cities" />
         <meta
           property="og:description"
-          content="We provide professional washing machine repair services in Minneapolis."
+          content="We provide fast and affordable appliance repair services in Twin Cities and nearby areas. Call us for professional service!"
         />
-        <meta property="og:image" content="https://www.repairspin.com/images/hero.webp" />
-        <meta property="og:url" content="https://www.repairspin.com" />
+        <meta property="og:type" content="website" />
+        <meta property="og:image" content="https://www.pavelsappliancerepair.com/img/hero.webp" />
+        <meta property="og:url" content="https://www.pavelsappliancerepair.com" />
         <meta property="og:type" content="website" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "LocalBusiness",
-            name: "Repair Spin",
-            description: "Fast and professional washing machine repair services in Minneapolis and nearby areas.",
+            name: "Pavel's Appliance Repair",
+            description: "Fast and professional repair services for washers, dryers, refrigerators, dishwashers, ovens, and stoves in Minneapolis and nearby areas. Call (555) 123-4567 for reliable service!",
             areaServed: [
               "Minnetonka",
               "Woodland",
@@ -64,9 +69,6 @@ export default function RootLayout({
               "Medina",
               "Minneapolis"
             ],
-            telephone: "+15551234567",
-            url: "https://www.repairspin.com",
-            image: "https://www.repairspin.com/images/hero.webp",
             openingHours: "Mo-Fr 08:00-18:00"
           })}
         </script>
