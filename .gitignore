@@ -62,7 +62,7 @@ package-lock.json       # Если используете yarn/pnpm
 
 # CI/CD файлы
 .npmrc                  # Настройки npm
-*.env.local
+# *.env.local
 *.env.development.local
 *.env.production.local
 
