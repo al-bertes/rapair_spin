@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js" 
+}
+
+datasource db {
+  provider  = "postgresql"
+  url  	    = env("DATABASE_URL")
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  name         String
+  email        String       @unique
+  password     String
+  createdAt    DateTime     @default(now())
+  appointment  Appointment? @relation(name: "AppointmentToUser") 
+
+  testimonial  Testimonial? // ✅ Один пользователь может иметь только один отзыв
+
+  BlogPost     BlogPost[]
+}
+
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @unique  // ✅ Один пользователь = один отзыв (если привязан к пользователю)
+  user      User?    @relation(fields: [userId], references: [id]) // ✅ Связываем с `User`
+  userName  String?  // ✅ Добавляем имя, если отзыв добавляется вручную
+  message   String
+  rating    Int      @default(5)
+  createdAt DateTime @default(now())
+}
+
+
+model Appointment {
+  time          String 
+  id           Int           @id @default(autoincrement())
+  date         DateTime
+  userId       Int           @unique
+  user         User          @relation(name: "AppointmentToUser", fields: [userId], references: [id]) // Связь с User
+  availability Availability  @relation(fields: [availabilityId], references: [id])
+  availabilityId Int         @unique // Делаем поле уникальным для связи один-к-одному
+  notes        String?
+  createdAt    DateTime      @default(now())
+}
+
+model Availability {
+  id          Int           @id @default(autoincrement())
+  date        DateTime      @unique
+  isAvailable Boolean       @default(true)
+  appointment Appointment?  @relation
+  createdAt   DateTime      @default(now())
+}
+
+
+model BlogPost {
+  id          Int      @id @default(autoincrement())
+  title       String
+  content     String
+  imageUrl    String?  // URL изображения (опционально)
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    Int      @default(1) // Автор всегда администратор с ID 1
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isPublished Boolean  @default(false) // Черновик или опубликовано
+}
