@@ -1,5 +1,5 @@
 import React from "react";
-import { CssBaseline, Container, AppBar, Toolbar, Typography } from "@mui/material";
+import { CssBaseline, Container } from "@mui/material";
 import Header from "../components/header";
 
 export const metadata = {

@@ -38,10 +38,17 @@ export default function TestimonialsSection() {
   }, []);
 
   return (
-    <Box component="section" id="testimonials" sx={{ backgroundColor: "#f5f5f5", py: 4, px: 2, textAlign: "center" }}>
-      <Typography variant="h4" sx={{ fontWeight: "bold" }}>Отзывы клиентов</Typography>
+    <Box component="section" id="testimonials" sx={{ backgroundColor: "#f5f5f5", textAlign: "center",
+      marginTop: {
+      xs: 2,
+      sm: 4, 
+      md: 6,   
+      lg: 8,   
+      xl: 10  
+    }}}>
+      <Typography variant="h4" sx={{ fontWeight: "bold" }}>Customer testimonials</Typography>
       <Typography variant="subtitle1" sx={{ mb: 4 }}>
-        Нам доверяют. Вот что говорят наши клиенты.
+      Our customers trust us. Here's what they say
       </Typography>
 
       {loading ? (
@@ -69,8 +76,8 @@ export default function TestimonialsSection() {
         </Box>
       )}
 
-      <Button variant="contained" sx={{ mt: 3 }} onClick={() => router.push("/testimonials")}>
-        Показать все отзывы
+      <Button variant="text" sx={{ mt: 3, textDecoration: "underline", textTransform: "none" }} onClick={() => router.push("/testimonials")}>
+        View all testimonials
       </Button>
     </Box>
   );

@@ -36,6 +36,13 @@ export default function Services() {
         backgroundColor: "#f9f9f9",
         py: 6,
         px: 3,
+        marginTop: {
+          xs: 2,
+          sm: 4, 
+          md: 6,   
+          lg: 8,   
+          xl: 10  
+        }
       }}
     >
       <Box textAlign="center" mb={4}>
