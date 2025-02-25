@@ -1,51 +1,50 @@
 import dayjs from "dayjs";
-import { prisma } from "./prisma/prisma-client";
+import utc from "dayjs/plugin/utc";
+import { PrismaClient } from "@prisma/client";
+
+dayjs.extend(utc); // 🔹 Подключаем UTC
+
+const prisma = new PrismaClient();
 
 async function generateAvailability(startDate: string, endDate: string, timeSlots: string[]) {
-  const start = dayjs(startDate);
-  const end = dayjs(endDate);
-  
-  // 🔹 Генерируем даты без запросов в БД
-  const dates = [];
+  const start = dayjs.utc(startDate); // 🔹 Начинаем с UTC
+  const end = dayjs.utc(endDate);
+
+  const availabilityData = [];
   let currentDate = start;
 
   while (currentDate.isBefore(end) || currentDate.isSame(end, "day")) {
-    dates.push(currentDate.toISOString().split("T")[0]); // ✅ Только дата (YYYY-MM-DD)
+    for (const timeSlot of timeSlots) {
+      const dateTime = dayjs.utc(`${currentDate.format("YYYY-MM-DD")}T${timeSlot}:00`).toDate();
+      availabilityData.push({ dateTime, isBooked: false });
+    }
     currentDate = currentDate.add(1, "day");
   }
 
-  // 🔹 Очищаем БД перед вставкой
+  console.log("🛠️ Очищаем БД...");
   await prisma.$transaction([
     prisma.appointment.deleteMany({}),
-    prisma.availability.deleteMany({})
+    prisma.availability.deleteMany({}),
   ]);
 
-  // 🔹 Генерируем массив всех доступных слотов
-  const availabilityData = [];
-  for (const date of dates) {
-    for (const timeSlot of timeSlots) {
-      availabilityData.push({
-        date: new Date(`${date}T${timeSlot}:00.000Z`),
-        isAvailable: true
-      });
-    }
-  }
+  console.log(`🚀 Добавляем ${availabilityData.length} слотов...`);
 
-  // 🔹 Вставляем данные **одним** запросом
-  if (availabilityData.length > 0) {
+  const batchSize = 1000;
+  for (let i = 0; i < availabilityData.length; i += batchSize) {
     await prisma.availability.createMany({
-      data: availabilityData
+      data: availabilityData.slice(i, i + batchSize),
     });
   }
 
-  console.log(`✅ Успешно создано ${availabilityData.length} записей доступности.`);
+  console.log(`✅ Успешно добавлено ${availabilityData.length} записей!`);
 }
 
-// 🔹 Генерация доступности с 08:00 до 16:00 с указанными датами
 generateAvailability(
-  "2025-02-01",  // Начальная дата (YYYY-MM-DD)
-  "2025-06-25",  // Конечная дата
-  ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"] // Интервалы времени
-).catch((error) => {
-  console.error("❌ Ошибка генерации доступности:", error.message);
-});
+  "2025-05-22",  // Начальная дата
+  "2025-06-30",  // Конечная дата
+  ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00"]
+)
+  .catch((error) => console.error("❌ Ошибка генерации:", error))
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

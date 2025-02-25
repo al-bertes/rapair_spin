@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 import {
   AppBar,
   Toolbar,
@@ -13,180 +14,210 @@ import {
   ListItem,
   ListItemText,
   Button,
+  Container,
+  Stack,
 } from "@mui/material";
-import { Login, PersonAdd } from "@mui/icons-material";
-import MenuIcon from "@mui/icons-material/Menu";
-import CloseIcon from "@mui/icons-material/Close";
+import { Login, PersonAdd, Menu, Close } from "@mui/icons-material";
 import Image from "next/image";
-import { jwtDecode } from "jwt-decode"; // ✅ Декодируем токен
+import { useRouter } from "next/navigation";
+import MenuItemLink from "@/app/components/MenuItemLink";
+import { motion } from "framer-motion";
+
+const menuItems = [
+  { href: "/#services", text: "Services" },
+  { href: "/testimonials", text: "Testimonials" },
+  { href: "/blog", text: "Blog" },
+];
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userId, setUserId] = useState<number | null>(null); // ✅ Храним ID пользователя
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
   const closeMenu = () => setIsMenuOpen(false);
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken");
-    setIsAuthenticated(false);
-    setUserId(null);
+    signOut();
+    closeMenu();
+    router.push("/");
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("authToken");
-    if (token) {
-      try {
-        const decoded: { id: number } = jwtDecode(token); // ✅ Декодируем токен
-        setIsAuthenticated(true);
-        setUserId(decoded.id); // ✅ Сохраняем userId
-      } catch (error) {
-        console.error("Invalid token:", error);
-        setIsAuthenticated(false);
-        setUserId(null);
-      }
-    }
-  }, []);
+    closeMenu();
+  }, [session]);
+
+  const isAuthenticated = !!session;
 
   return (
-    <AppBar position="static" sx={{ backgroundColor: "#ffffff", boxShadow: "none", borderBottom: "1px solid #ddd" }}>
-      <Toolbar sx={{ justifyContent: "space-between" }}>
-        {/* Логотип */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Link href="/" passHref>
-            <Box>
-              <Image src="/img/logo.svg" alt="logo" width={210} height={50} />
-            </Box>
-          </Link>
-        </Box>
-
-        {/* Кнопка меню для мобильных */}
-        <IconButton
-          edge="end"
-          sx={{ display: { xs: "block", md: "none" }, color: "black" }}
-          aria-label="menu"
-          onClick={toggleMenu}
+    <AppBar
+      position="static"
+      sx={{
+        backgroundColor: "#ffffff",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+        borderBottom: "1px solid #ddd",
+        py: 1,
+      }}
+    >
+      <Container maxWidth="lg">
+        <Toolbar
+          sx={{
+            justifyContent: "space-between",
+            alignItems: "center",
+            paddingY: 1,
+          }}
         >
-          <MenuIcon />
-        </IconButton>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Link href="/" passHref>
+              <Box>
+                <Image src="/img/logo.svg" alt="logo" width={210} height={50} />
+              </Box>
+            </Link>
+          </Box>
 
-        {/* Навигация для больших экранов */}
-        <Box component="nav" sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
-          <Link href="/#services" passHref>
-            <Typography variant="body1" sx={{ textDecoration: "none", color: "#333" }}>
-              Services
-            </Typography>
-          </Link>
-          <Link href="/testimonials" passHref>
-            <Typography variant="body1" sx={{ textDecoration: "none", color: "#333" }}>
-              Testimonials
-            </Typography>
-          </Link>
-          <Link href={isAuthenticated ? `/users/${userId}` : "/login"} passHref> {/* ✅ Проверка аутентификации */}
-            <Typography variant="body1" sx={{ textDecoration: "none", color: "#333" }}>
-              Schedule Repair
-            </Typography>
-          </Link>
-          <Link href="/blog" passHref>
-            <Typography variant="body1" sx={{ textDecoration: "none", color: "#333" }}>
-              Blog
-            </Typography>
-          </Link>
-        </Box>
+          <IconButton
+            edge="end"
+            sx={{ display: { xs: "block", md: "none" }, color: "black" }}
+            aria-label="menu"
+            onClick={toggleMenu}
+          >
+            <Menu />
+          </IconButton>
 
-        {/* Ссылки на вход, регистрацию, профиль и выход */}
-        <Box component="nav" sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
-          {!isAuthenticated ? (
-            <>
-              <Link href="/login" passHref>
-                <IconButton color="primary" aria-label="login">
-                  <Typography variant="caption">Sign In</Typography>
-                  <Login />
-                </IconButton>
+          <Stack
+            direction="row"
+            spacing={4}
+            component="nav"
+            sx={{
+              display: { xs: "none", md: "flex" },
+              alignItems: "center",
+            }}
+          >
+            {menuItems.map((item) => (
+              <Link href={item.href} passHref key={item.text}>
+                <Typography
+                  variant="body1"
+                  component={motion.div}
+                  whileHover={{ scale: 1.1, color: "#1976d2" }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                  sx={{
+                    fontFamily: "'Poppins', sans-serif",
+                    fontWeight: "500",
+                    cursor: "pointer",
+                    textDecoration: "none",
+                    color: "#333",
+                  }}
+                >
+                  {item.text}
+                </Typography>
               </Link>
-              <Link href="/register" passHref>
-                <IconButton color="secondary" aria-label="sign up">
-                  <Typography variant="caption">Sign Up</Typography>
-                  <PersonAdd />
-                </IconButton>
-              </Link>
-            </>
-          ) : (
-            <>
-              <Link href={`/users/${userId}`} passHref> {/* ✅ Динамический профиль */}
-                <Button color="primary" variant="outlined">
+            ))}
+
+            <Link href={isAuthenticated ? "/profile" : "/login"} passHref>
+              <Typography
+                variant="body1"
+                component={motion.div}
+                whileHover={{ scale: 1.1, color: "#1976d2" }}
+                sx={{
+                  fontFamily: "'Poppins', sans-serif",
+                  fontWeight: "500",
+                  cursor: "pointer",
+                  textDecoration: "none",
+                  color: "#333",
+                }}
+              >
+                Schedule Repair
+              </Typography>
+            </Link>
+          </Stack>
+
+          <Box
+            component="nav"
+            sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}
+          >
+            {status === "loading" ? (
+              <Typography variant="body1">Loading...</Typography>
+            ) : !isAuthenticated ? (
+              <>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  startIcon={<Login />}
+                  sx={{ fontFamily: "'Poppins', sans-serif" }}
+                  onClick={() => router.push("/login")}
+                >
+                  Sign In
+                </Button>
+                <Button
+                  variant="contained"
+                  color="secondary"
+                  startIcon={<PersonAdd />}
+                  sx={{ fontFamily: "'Poppins', sans-serif" }}
+                  onClick={() => router.push("/register")}
+                >
+                  Sign Up
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  sx={{ fontFamily: "'Poppins', sans-serif" }}
+                  onClick={() => router.push("/profile")}
+                >
                   Profile
                 </Button>
-              </Link>
-              <Button color="secondary" variant="contained" onClick={handleLogout}>
-                Logout
-              </Button>
-            </>
-          )}
-        </Box>
+                <Button
+                  variant="contained"
+                  color="error"
+                  sx={{ fontFamily: "'Poppins', sans-serif" }}
+                  onClick={handleLogout}
+                >
+                  Logout
+                </Button>
+              </>
+            )}
+          </Box>
 
-        {/* Выдвижное меню для мобильных */}
-        <Drawer anchor="right" open={isMenuOpen} onClose={closeMenu}>
-          <Box
-            sx={{ width: 250, padding: 2, display: "flex", flexDirection: "column" }}
-            role="presentation"
-            onClick={closeMenu}
-            onKeyDown={closeMenu}
-          >
-            <IconButton onClick={closeMenu} sx={{ alignSelf: "flex-end" }}>
-              <CloseIcon />
-            </IconButton>
-            <List>
-              <Link href="/#services" passHref>
-                <ListItem component="a">
-                  <ListItemText primary="Services" />
-                </ListItem>
-              </Link>
-              <Link href="/testimonials" passHref>
-                <ListItem component="a">
-                  <ListItemText primary="Testimonials" />
-                </ListItem>
-              </Link>
-              <Link href={isAuthenticated ? `/users/${userId}` : "/login"} passHref> {/* ✅ Проверка аутентификации */}
-                <ListItem component="a">
-                  <ListItemText primary="Schedule Repair" />
-                </ListItem>
-              </Link>
-              <Link href="/blog" passHref>
-                <ListItem component="a">
-                  <ListItemText primary="Blog" />
-                </ListItem>
-              </Link>
-              {!isAuthenticated ? (
-                <>
-                  <Link href="/login" passHref>
-                    <ListItem component="a">
-                      <ListItemText primary="Sign In" />
-                    </ListItem>
-                  </Link>
-                  <Link href="/register" passHref>
-                    <ListItem component="a">
-                      <ListItemText primary="Sign Up" />
-                    </ListItem>
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link href={`/users/${userId}`} passHref> {/* ✅ Динамическая ссылка */}
-                    <ListItem component="a">
-                      <ListItemText primary="Profile" />
-                    </ListItem>
-                  </Link>
-                  <ListItem onClick={handleLogout}>
+          <Drawer anchor="right" open={isMenuOpen} onClose={closeMenu}>
+            <Box
+              sx={{
+                width: 250,
+                padding: 2,
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
+                backgroundColor: "#f9f9f9",
+              }}
+            >
+              <IconButton onClick={closeMenu} sx={{ alignSelf: "flex-end" }}>
+                <Close />
+              </IconButton>
+              <List>
+                {menuItems.map((item) => (
+                  <MenuItemLink
+                    key={item.text}
+                    href={item.href}
+                    text={item.text}
+                    closeMenu={closeMenu}
+                  />
+                ))}
+                <MenuItemLink
+                  href={isAuthenticated ? "/profile" : "/login"}
+                  text="Schedule Repair"
+                  closeMenu={closeMenu}
+                />
+                {isAuthenticated && (
+                  <ListItem  onClick={handleLogout}>
                     <ListItemText primary="Logout" />
                   </ListItem>
-                </>
-              )}
-            </List>
-          </Box>
-        </Drawer>
-      </Toolbar>
+                )}
+              </List>
+            </Box>
+          </Drawer>
+        </Toolbar>
+      </Container>
     </AppBar>
   );
 }

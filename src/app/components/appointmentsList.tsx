@@ -5,111 +5,160 @@ import {
   Box,
   Typography,
   CircularProgress,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
   Button,
+  Card,
+  CardContent,
+  useMediaQuery,
 } from "@mui/material";
-import { convertDate } from "../constants";
+import { useTheme } from "@mui/material/styles";
 
-export default function AppointmentsList() {
+const AppointmentsList = () => {
   const [appointments, setAppointments] = useState<
-    { id: number; date: string; time: string; user: { name: string }; notes?: string }[]
+    { id: number; date?: string; time?: string; user: string; address?: string; notes?: string }[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [isAdmin, setIsAdmin] = useState(false);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) return;
-
-        const decodedToken = JSON.parse(atob(token.split(".")[1])); // ✅ Decode JWT
-        setIsAdmin(decodedToken.id === 1); // ✅ Check if the user is an admin
-
-        const response = await fetch("/api/appointments", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
-
+        const response = await fetch("/api/appointments");
         const data = await response.json();
-        setAppointments(data || []); // ✅ Ensure `data` is not null
+        setAppointments(data);
       } catch (error) {
         console.error("❌ Error loading appointments:", error);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
 
     fetchAppointments();
   }, []);
 
-  const deleteAppointment = async (id: number) => {
-    if (!confirm("Are you sure you want to delete this appointment?")) return;
-  
+  const handleDelete = async (id: number) => {
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        alert("You are not authorized.");
-        return;
-      }
-  
       const response = await fetch(`/api/appointments`, {
         method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ appointmentId: id }), // ✅ Pass the ID in the request body
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ appointmentId: id }),
       });
-  
+
       const data = await response.json();
-      if (!response.ok) {
-        alert(data.error || "Error deleting appointment.");
-        return;
+
+      if (response.ok) {
+        setAppointments((prev) => prev.filter((a) => a.id !== id));
+        alert("✅ Appointment successfully deleted!");
+      } else {
+        alert(`❌ Deletion error: ${data.error || "Unknown error"}`);
       }
-  
-      setAppointments((prev) => prev.filter((a) => a.id !== id)); // ✅ Remove the deleted appointment from the list
-      alert("Appointment successfully deleted.");
     } catch (error) {
       console.error("❌ Error deleting appointment:", error);
-      alert("Error deleting appointment.");
     }
   };
-  
 
   return (
-    <Box>
+    <Box sx={{ padding: 3 }}>
       <Typography variant="h5" gutterBottom>
-        Appointments
+        📋 Appointments
       </Typography>
+
       {loading ? (
         <CircularProgress />
       ) : appointments.length === 0 ? (
-        <Typography color="text.secondary">No appointments available.</Typography>
+        <Typography>📭 No appointments available.</Typography>
+      ) : isMobile ? (
+        // Mobile View: Simplified cards
+        <Box>
+          {appointments.map(({ id, date, time, user, address, notes }) => {
+            const formattedDateTime =
+              date && time
+                ? `${new Date(date).toLocaleDateString()} ${new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}`
+                : "Date and Time not specified";
+
+            return (
+              <Card key={id} sx={{ marginBottom: 2 }}>
+                <CardContent>
+                  <Typography variant="h6">{user}</Typography>
+                  <Typography variant="body2">📅 {formattedDateTime}</Typography>
+                  <Typography variant="body2">📍 {address || "No address provided"}</Typography>
+                  {notes && (
+                    <Typography variant="body2" sx={{ marginTop: 1 }}>
+                      💬 {notes}
+                    </Typography>
+                  )}
+                  <Button
+                    color="error"
+                    onClick={() => handleDelete(id)}
+                    variant="contained"
+                    size="small"
+                    sx={{ marginTop: 2 }}
+                  >
+                    Delete
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </Box>
       ) : (
-        <List>
-          {appointments.map(({ id, date, time, user, notes }) => (
-            <React.Fragment key={id}>
-              <ListItem>
-                <ListItemText
-                  primary={`🗓 ${convertDate(date)} ⏰ ${time}`}
-                  secondary={`👤 ${user.name} ${notes ? `📌 ${notes}` : ""}`}
-                />
-                <Button variant="contained" color="error" onClick={() => deleteAppointment(id)}>
-                  Delete
-                </Button>
-              </ListItem>
-              <Divider />
-            </React.Fragment>
-          ))}
-        </List>
+        // Desktop View: Full Table
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Date & Time</TableCell>
+                <TableCell>User</TableCell>
+                <TableCell>Address</TableCell>
+                <TableCell>Notes</TableCell>
+                <TableCell align="right">Actions</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {appointments.map(({ id, date, time, user, address, notes }) => {
+                const formattedDateTime =
+                  date && time
+                    ? `${new Date(date).toLocaleDateString()} ${new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}`
+                    : "Date and Time not specified";
+
+                return (
+                  <TableRow key={id}>
+                    <TableCell>{formattedDateTime}</TableCell>
+                    <TableCell>{user}</TableCell>
+                    <TableCell>{address || "No address provided"}</TableCell>
+                    <TableCell>{notes ? notes : "No notes"}</TableCell>
+                    <TableCell align="right">
+                      <Button
+                        color="error"
+                        onClick={() => handleDelete(id)}
+                        variant="contained"
+                        size="small"
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </TableContainer>
       )}
     </Box>
   );
-}
+};
+
+export default AppointmentsList;

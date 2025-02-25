@@ -1,32 +1,24 @@
+import { PrismaClient } from "@prisma/client";
 import { NextResponse } from "next/server";
-import { prisma } from "../../../../prisma/prisma-client";
+
+const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const data = await prisma.availability.findMany({
-      where: { isAvailable: true },
-      select: { id: true, date: true },
-      orderBy: { date: "asc" },
+    const slots = await prisma.availability.findMany({
+      where: { isBooked: false }, // ✅ Только свободные даты
+      select: { dateTime: true },
+      distinct: ["dateTime"],
+      orderBy: { dateTime: "asc" },
     });
 
-    const availabilityMap: Record<string, { id: number; time: string }[]> = {};
+    console.log("📆 Доступные даты:", slots);
 
-    data.forEach(({ id, date }) => {
-      const dateStr = date.toISOString().split("T")[0]; 
-      const timeStr = date.toISOString().split("T")[1].slice(0, 5); 
-
-      if (!availabilityMap[dateStr]) {
-        availabilityMap[dateStr] = [];
-      }
-
-      availabilityMap[dateStr].push({ id, time: timeStr });
-    });
-
-    console.log("✅ API вернул даты:", availabilityMap);
-
-    return NextResponse.json({ availability: availabilityMap });
+    return NextResponse.json(slots.map((slot) => ({
+      date: slot.dateTime.toISOString().split("T")[0], // ✅ Только дата (YYYY-MM-DD)
+    })));
   } catch (error) {
-    console.error("❌ Error get dates:", error);
-    return NextResponse.json({ error: "Error in server" }, { status: 500 });
+    console.error("❌ Ошибка получения дат:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }

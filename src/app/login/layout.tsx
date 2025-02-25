@@ -1,24 +1,35 @@
+"use client";
+import { SessionProvider } from "next-auth/react";
 import React from "react";
-import { CssBaseline, Container, AppBar, Toolbar, Typography } from "@mui/material";
+import { CssBaseline, Container, Box } from "@mui/material";
 import Header from "../components/header";
-
-export const metadata = {
-  title: "My Blog Application",
-  description: "A blog application built with Next.js and Material-UI",
-};
+import Footer from "../components/footer";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh", // Минимальная высота экрана
+      }}
+    >
+      <CssBaseline />
+      
+      <Header />
 
-        <div className="container">
+      <Container
+        maxWidth="lg"
+        sx={{
+          flexGrow: 1, // Растягивается, чтобы занять оставшееся пространство
+          marginTop: 4,
+          mb: 8
+        }}
+      >
+        <SessionProvider>{children}</SessionProvider>
+      </Container>
 
-        <Header/>
-        <CssBaseline />
-
-        <Container maxWidth="lg" sx={{ marginTop: 4 }}>
-          {children}
-        </Container>
-        </div>
- 
+      <Footer />
+    </Box>
   );
 }

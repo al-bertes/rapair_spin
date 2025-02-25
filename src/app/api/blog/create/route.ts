@@ -4,22 +4,21 @@ import { IncomingMessage } from "http";
 import formidable, { File } from "formidable";
 import fs from "fs/promises";
 import path from "path";
-import jwt from "jsonwebtoken";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "../../../../../prisma/prisma-client";
-
-const JWT_SECRET = "your_secret_key";
 
 const uploadDir = path.join(process.cwd(), "public/uploads");
 const form = formidable({
   uploadDir,
   keepExtensions: true,
-  maxFileSize: 5 * 1024 * 1024, // 5 MB
+  maxFileSize: 5 * 1024 * 1024, // 5 MB limit
   filename: (_name, _ext, part) => {
-    const timestamp = Date.now();
-    return `${timestamp}-${part.originalFilename}`;
+    return `${Date.now()}-${part.originalFilename}`;
   },
 });
 
+// Ensure upload directory exists
 async function ensureUploadDir() {
   try {
     await fs.access(uploadDir);
@@ -28,6 +27,7 @@ async function ensureUploadDir() {
   }
 }
 
+// Convert NextRequest to IncomingMessage for formidable
 function convertToIncomingMessage(req: NextRequest): IncomingMessage {
   const readable = new Readable();
   readable._read = () => {};
@@ -50,6 +50,7 @@ function convertToIncomingMessage(req: NextRequest): IncomingMessage {
   return incomingMessage;
 }
 
+// Parse form data
 async function parseForm(req: NextRequest): Promise<{
   fields: formidable.Fields;
   files: formidable.Files;
@@ -68,81 +69,67 @@ export async function POST(request: NextRequest) {
   try {
     await ensureUploadDir();
 
-    const authHeader = request.headers.get("Authorization");
-
-    if (!authHeader) {
-      return NextResponse.json(
-        { error: "Authorization header is missing" },
-        { status: 401 }
-      );
+    // ✅ Get session from NextAuth
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      console.error("❌ User not logged in.");
+      return NextResponse.json({ error: "You must be logged in to create a blog post." }, { status: 401 });
     }
 
-    const token = authHeader.replace("Bearer ", "").trim();
-
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET) as { id: number };
-    } catch (error) {
-      return NextResponse.json(
-        { error: "Invalid or expired token" },
-        { status: 401 }
-      );
-    }
-
-    if (decoded.id !== 1) {
+    // ✅ Admin check by email
+    if (session.user.email !== "art.bertes@gmail.com") {
+      console.error("❌ Unauthorized access attempt by:", session.user.email);
       return NextResponse.json(
         { error: "Access denied. Only the admin can create blog posts." },
         { status: 403 }
       );
     }
 
+    // ✅ Parse form data
     const { fields, files } = await parseForm(request);
-
     const { title, content } = fields;
 
-    const imageArray = files.image as File[] | undefined; // `image` теперь массив
-    const image = Array.isArray(imageArray) ? imageArray[0] : undefined; // Берём первый файл
-
+    // ✅ Validate input
     if (!title || !content) {
-      return NextResponse.json(
-        { error: "Missing required fields: title or content" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Title and content are required." }, { status: 400 });
     }
 
-    if (!image || !image.filepath) {
-      console.error("Image file or filepath is missing:", image); // Логируем проблему
-      return NextResponse.json(
-        { error: "Image file is required and must have a valid path" },
-        { status: 400 }
-      );
+    // ✅ Handle image upload
+    const imageArray = files.image as File[] | undefined;
+    const image = Array.isArray(imageArray) ? imageArray[0] : undefined;
+    const imagePath = image ? `/uploads/${path.basename(image.filepath)}` : "";
+
+    // ✅ Get admin user from database
+    const adminUser = await prisma.user.findUnique({
+      where: { email: "art.bertes@gmail.com" },
+    });
+
+    if (!adminUser) {
+      console.error("❌ Admin user not found in database.");
+      return NextResponse.json({ error: "Admin user not found." }, { status: 404 });
     }
 
-    const imagePath = `/uploads/${path.basename(image.filepath)}`;
-
+    // ✅ Create new blog post
     const newPost = await prisma.blogPost.create({
       data: {
         title: String(title),
         content: String(content),
         isPublished: false,
-        authorId: 1, 
-        imageUrl: imagePath, 
+        authorId: adminUser.id, // Use admin's ID
+        imageUrl: imagePath,
       },
     });
 
-    return NextResponse.json(newPost);
+    console.log("✅ Blog post created:", newPost);
+    return NextResponse.json(newPost, { status: 201 });
   } catch (error) {
-    console.error("Error creating blog post:", error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "An error occurred" },
-      { status: 500 }
-    );
+    console.error("❌ Error creating blog post:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-
 export const config = {
   api: {
-    bodyParser: false, 
+    bodyParser: false, // Disable bodyParser for file uploads
   },
 };

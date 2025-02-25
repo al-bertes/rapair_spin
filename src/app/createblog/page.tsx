@@ -2,16 +2,27 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Box, Button, Container, TextField, Typography, Alert } from "@mui/material";
-import axiosInstance from "../../axiosInstance"; 
 
 export default function CreateBlogPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
+
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const router = useRouter();
+
+  // ✅ Redirect if user is not logged in
+  if (!session) {
+    return (
+      <Container maxWidth="sm">
+        <Alert severity="error">You must be logged in to create a blog post.</Alert>
+      </Container>
+    );
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -19,50 +30,39 @@ export default function CreateBlogPage() {
     }
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+
     const formData = new FormData();
     formData.append("title", title);
     formData.append("content", content);
     if (image) {
       formData.append("image", image);
     }
-  
+
     try {
-      const token = localStorage.getItem("authToken");
-  
-      if (!token) {
-        setError("You must be logged in to create a blog post.");
-        return;
-      }
-
-      const response = await axiosInstance.post("/api/blog/create", formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await fetch("/api/blog/create", {
+        method: "POST",
+        body: formData,
       });
-  
-      if (response.status === 200) {
-        setSuccess(true);
-        setError("");
-        setTitle("");
-        setContent("");
-        setImage(null);
 
-        router.push("/blog");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "An error occurred while creating the blog post.");
       }
+
+      setSuccess(true);
+      setError("");
+      setTitle("");
+      setContent("");
+      setImage(null);
+
+      router.push("/blog");
     } catch (err: any) {
-      if (err.response && err.response.data && err.response.data.error) {
-        setError(err.response.data.error);
-      } else {
-        setError("An unexpected error occurred");
-      }
+      setError(err.message || "An unexpected error occurred.");
     }
   };
-  
-  
 
   return (
     <Container maxWidth="sm">

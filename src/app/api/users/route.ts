@@ -1,35 +1,52 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from "../../../../prisma/prisma-client";
-import bcrypt from "bcrypt";
+
+const ADMIN_EMAIL = "art.bertes@gmail.com"; // ✅ Admin email
 
 export async function GET() {
-    const users = await prisma.user.findMany();
-    return NextResponse.json({
-        users
-    })
-}
-
-
-export async function POST(request: NextRequest) {
-    const body = await request.json();
-    const { name, email, password } = body;
-
-    if (!name || !email || !password) {
-        return NextResponse.json(
-            { error: "Missing required fields: name, email, password" },
-            { status: 400 }
-        );
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const user = await prisma.user.create({
-        data: {
-            name,
-            email,
-            password: hashedPassword, 
-        },
+  try {
+    const users = await prisma.user.findMany({
+      select: { id: true, name: true, email: true },
     });
 
-    return NextResponse.json(user);
+    return NextResponse.json(users);
+  } catch (error) {
+    console.error("❌ Error fetching users:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session.user?.email !== ADMIN_EMAIL) {
+      return NextResponse.json({ error: "Unauthorized request" }, { status: 403 });
+    }
+
+    const { userId } = await request.json();
+    if (!userId || isNaN(Number(userId))) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
+    }
+
+    // Check if user exists
+    const user = await prisma.user.findUnique({
+      where: { id: Number(userId) },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Delete user and their related data (cascade)
+    await prisma.user.delete({ where: { id: user.id } });
+
+    console.log("✅ User deleted:", user.id);
+    return NextResponse.json({ success: true, message: "User deleted" });
+  } catch (error) {
+    console.error("❌ Error deleting user:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
 }

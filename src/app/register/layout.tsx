@@ -1,24 +1,35 @@
-import React from "react";
-import { CssBaseline, Container, AppBar, Toolbar, Typography } from "@mui/material";
-import Header from "../components/header";
+"use client";
 
-export const metadata = {
-  title: "My Blog Application",
-  description: "A blog application built with Next.js and Material-UI",
-};
+import React from "react";
+import { CssBaseline, Container, Box } from "@mui/material";
+import Header from "@/app/components/header";
+import Footer from "@/app/components/footer";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-
-        <div className="container">
-
-        <Header/>
-        <CssBaseline />
-
-        <Container maxWidth="lg" sx={{ marginTop: 4 }}>
-          {children}
-        </Container>
-        </div>
-   
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
+      }}
+    >
+      <CssBaseline />
+      <Header />
+      
+      <Container
+        component="main"
+        maxWidth="lg"
+        sx={{
+          flexGrow: 1, // Растягивается, чтобы занять все доступное пространство
+          marginTop: 4,
+          mb: 8
+        }}
+      >
+        {children}
+      </Container>
+      
+      <Footer />
+    </Box>
   );
 }

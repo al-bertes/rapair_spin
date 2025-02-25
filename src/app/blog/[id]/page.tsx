@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Typography, CircularProgress, Alert, Box, Button } from "@mui/material";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 export default function BlogPostPage() {
   const { id } = useParams();
@@ -91,7 +91,7 @@ export default function BlogPostPage() {
 
   return (
     <Suspense fallback={<CircularProgress />}>
-      <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <Container maxWidth="sm" sx={{ padding: 0, mt: 4, mb: 4 }}>
         <Box>
           {post.imageUrl && (
             <Box sx={{ mt: 4 }}>
@@ -102,12 +102,36 @@ export default function BlogPostPage() {
               />
             </Box>
           )}
-          <Typography variant="h3" gutterBottom>
+          <Typography
+            variant="h3"
+            gutterBottom
+            sx={{
+              fontSize: { xs: '1.5rem', sm: '2rem', md: '2.5rem' },
+              lineHeight: { xs: '1.2', sm: '1.3', md: '1.4' }
+            }}
+          >
             {post.title}
           </Typography>
-          <Typography variant="body1" sx={{ mt: 2, whiteSpace: "pre-line" }}>
+          <Typography
+            variant="body1"
+            sx={{
+              mt: 2,
+              whiteSpace: "pre-line",
+              fontSize: { xs: "14px", sm: "16px", md: "18px" },
+              lineHeight: { xs: "1.4", sm: "1.6", md: "1.8" },
+            }}
+          >
             {post.content}
           </Typography>
+          <Box sx={{ mt: 6, textAlign: "center" }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => router.push("/blog")}
+            >
+              Read More Articles
+            </Button>
+          </Box>
           {isAdmin && (
             <Box sx={{ mt: 4, textAlign: "right" }}>
               <Button

@@ -11,16 +11,27 @@ import {
   CardContent,
   Rating,
   Button,
-  TextField,
+  Avatar,
 } from "@mui/material";
-import { jwtDecode } from "jwt-decode"; // 📌 Декодируем JWT токен
+import { useSession } from "next-auth/react"; 
+import { motion } from "framer-motion";
+
+// 🎨 Цветовая палитра для нейтральных аватарок
+const avatarColors = ["#FFC107", "#03A9F4", "#8BC34A", "#FF5722", "#9C27B0", "#607D8B", "#FF9800"];
+
+const fadeInUp = {
+  hidden: { opacity: 0, y: 50 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+};
 
 export default function TestimonialsPage() {
+  const { data: session, status } = useSession(); 
   const [testimonials, setTestimonials] = useState<
-    { id: number; user: string; message: string; rating: number }[]
+    { id: number; userName: string | null; message: string; rating: number }[]
   >([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+
   const [name, setName] = useState("");
   const [message, setMessage] = useState("");
   const [rating, setRating] = useState<number | null>(5);
@@ -30,206 +41,136 @@ export default function TestimonialsPage() {
     const fetchTestimonials = async () => {
       try {
         const response = await fetch("/api/testimonials");
-
-        if (!response.ok) {
-          throw new Error(`Ошибка сервера: ${response.status} ${response.statusText}`);
-        }
-
-        // ✅ Проверяем, что ответ JSON
-        const contentType = response.headers.get("Content-Type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Некорректный формат ответа от сервера.");
-        }
-
+        if (!response.ok) throw new Error("Server error");
         const data = await response.json();
         setTestimonials(data);
       } catch (error) {
-        console.error("❌ Ошибка загрузки отзывов:", error);
+        console.error("❌ Error loading testimonials:", error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchTestimonials();
   }, []);
 
-  // ✅ Проверяем, является ли пользователь администратором
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const token = localStorage.getItem("authToken");
-      if (!token) return;
-
-      try {
-        const decoded: { id: number } = jwtDecode(token); // 📌 Расшифровка токена
-        if (decoded.id === 1) {
-          setIsAdmin(true);
-        }
-      } catch (error) {
-        console.error("Ошибка декодирования токена:", error);
-      }
+    if (session?.user?.email === "art.bertes@gmail.com") {
+      setIsAdmin(true);
+    } else {
+      setIsAdmin(false);
     }
-  }, []);
+  }, [session]);
 
-  // ✅ Функция добавления отзыва (администратор)
-  const handleAddTestimonial = async () => {
-    if (!name.trim() || !message.trim() || !rating) return;
-
-    setSubmitting(true);
-    try {
-      if (typeof window !== "undefined") {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          alert("Вы не авторизованы.");
-          setSubmitting(false);
-          return;
-        }
-
-        const response = await fetch("/api/testimonials", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ userName: name, message, rating }),
-        });
-
-        const contentType = response.headers.get("Content-Type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Некорректный формат ответа сервера.");
-        }
-
-        const data = await response.json();
-        if (response.ok) {
-          setTestimonials((prev) => [...prev, data]);
-          setName("");
-          setMessage("");
-          setRating(5);
-        } else {
-          alert(data.error || "Ошибка при добавлении отзыва.");
-        }
-      }
-    } catch (error) {
-      console.error("❌ Ошибка при добавлении отзыва:", error);
-      alert("Ошибка при добавлении отзыва.");
-    }
-
-    setSubmitting(false);
-  };
-
-  // ✅ Функция удаления отзыва (администратор)
   const handleDeleteTestimonial = async (id: number) => {
-    if (!isAdmin) return;
+    if (!isAdmin) return alert("Only the administrator can delete testimonials.");
 
     try {
-      if (typeof window !== "undefined") {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          alert("Вы не авторизованы.");
-          return;
-        }
+      const response = await fetch(`/api/testimonials?id=${id}`, {
+        method: "DELETE",
+      });
 
-        const response = await fetch(`/api/testimonials/${id}`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-
-        if (response.ok) {
-          setTestimonials((prev) => prev.filter((t) => t.id !== id));
-        } else {
-          alert("Ошибка при удалении отзыва.");
-        }
+      if (response.ok) {
+        setTestimonials((prev) => prev.filter((t) => t.id !== id));
+        alert("Testimonial successfully deleted!");
+      } else {
+        alert("Error deleting testimonial.");
       }
     } catch (error) {
-      console.error("❌ Ошибка при удалении отзыва:", error);
+      console.error("❌ Error deleting testimonial:", error);
     }
   };
 
   return (
     <Container maxWidth="md" sx={{ paddingY: 4 }}>
-      <Typography variant="h4" textAlign="center" gutterBottom>
-        Отзывы клиентов
+      <Typography
+        variant="h3"
+        sx={{
+          mb: 4,
+          textAlign: "center",
+          fontWeight: "bold",
+          fontFamily: "'Poppins', sans-serif",
+          color: "#1976d2",
+        }}
+      >
+        What Our Customers Say
       </Typography>
 
       {loading ? (
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
           <CircularProgress />
         </Box>
-      ) : testimonials.length === 0 ? (
-        <Typography textAlign="center" color="text.secondary">
-          Отзывов пока нет. Будьте первым, кто оставит отзыв!
-        </Typography>
       ) : (
-        <Grid container spacing={3}>
-          {testimonials.map(({ id, user, message, rating }) => (
-            <Grid item xs={12} sm={6} key={id}>
-              <Card elevation={3}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {user}
-                  </Typography>
-                  <Rating value={rating} precision={0.5} readOnly />
-                  <Typography variant="body2" sx={{ marginTop: 1 }}>
-                    {message}
-                  </Typography>
-                  {isAdmin && (
-                    <Button
-                      variant="contained"
-                      color="error"
-                      sx={{ marginTop: 1 }}
-                      onClick={() => handleDeleteTestimonial(id)}
-                    >
-                      Удалить
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+        <Grid container spacing={4}>
+          {testimonials.map(({ id, userName, message, rating }) => {
+            const initials = (userName || "A").slice(0, 1).toUpperCase();
+            const avatarColor = avatarColors[id % avatarColors.length];
 
-      {/* ✅ Форма добавления отзыва для администратора */}
-      {isAdmin && (
-        <Box
-          sx={{
-            marginTop: 4,
-            padding: 3,
-            backgroundColor: "#f9f9f9",
-            borderRadius: "8px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
-            textAlign: "center",
-          }}
-        >
-          <Typography variant="h5" gutterBottom>
-            Добавить отзыв вручную
-          </Typography>
-          <TextField
-            label="Имя пользователя"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            fullWidth
-            sx={{ marginBottom: 2 }}
-          />
-          <TextField
-            label="Отзыв"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            multiline
-            rows={3}
-            fullWidth
-            sx={{ marginBottom: 2 }}
-          />
-          <Rating value={rating} onChange={(_, newValue) => setRating(newValue)} />
-          <Button
-            variant="contained"
-            color="primary"
-            sx={{ marginTop: 2 }}
-            onClick={handleAddTestimonial}
-            disabled={submitting}
-          >
-            {submitting ? <CircularProgress size={24} /> : "Добавить отзыв"}
-          </Button>
-        </Box>
+            return (
+              <Grid item xs={12} sm={6} key={id}>
+                <motion.div
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.2 }}
+                  variants={fadeInUp}
+                  whileHover={{ scale: 1.05 }}
+                >
+                  <Card
+                    elevation={3}
+                    sx={{
+                      borderRadius: "16px",
+                      boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
+                      overflow: "hidden",
+                      transition: "all 0.3s",
+                      backgroundColor: "#ffffff",
+                    }}
+                  >
+                    <CardContent sx={{ textAlign: "center", padding: 3 }}>
+                      <Avatar
+                        sx={{
+                          width: 80,
+                          height: 80,
+                          margin: "auto",
+                          mb: 2,
+                          backgroundColor: avatarColor,
+                          color: "#fff",
+                          fontSize: "2rem",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {initials}
+                      </Avatar>
+                      <Typography variant="h6" gutterBottom>
+                        {userName || "Anonymous"}
+                      </Typography>
+                      <Rating value={rating} precision={0.5} readOnly sx={{ mb: 2 }} />
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "#555",
+                          fontStyle: "italic",
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        "{message}"
+                      </Typography>
+
+                      {isAdmin && (
+                        <Button
+                          variant="contained"
+                          color="error"
+                          sx={{ marginTop: 2 }}
+                          onClick={() => handleDeleteTestimonial(id)}
+                        >
+                          Delete Testimonial
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </Grid>
+            );
+          })}
+        </Grid>
       )}
     </Container>
   );

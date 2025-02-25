@@ -1,52 +1,58 @@
 import { NextRequest, NextResponse } from "next/server";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // NextAuth config
 import { prisma } from "../../../../prisma/prisma-client";
-
-const JWT_SECRET = process.env.JWT_SECRET || "your_secret_key";
 
 export async function POST(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "No authorization token" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "Unauthorized request" }, { status: 401 });
     }
 
-    const token = authHeader.replace("Bearer ", "").trim();
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    const userId = Number(session.user.id);
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
-    const userId = (decoded as any).id;
-    let { date, time, notes, availabilityId } = await request.json();
+    const { dateTime, notes } = await request.json();
+    console.log("📌 Appointment request received:", { dateTime, notes });
 
-    console.log("📌 Received fields before validation:", { date, time, notes, availabilityId });
-
-    if (!date || !time || availabilityId === undefined || availabilityId === null) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    if (!dateTime) {
+      return NextResponse.json({ error: "Date and time are required" }, { status: 400 });
     }
 
-    const parsedAvailabilityId = Number(availabilityId);
-    if (isNaN(parsedAvailabilityId)) {
-      return NextResponse.json({ error: "Invalid availabilityId format" }, { status: 400 });
+    // Check if the user already has an appointment
+    const existingAppointment = await prisma.appointment.findUnique({
+      where: { userId },
+    });
+
+    if (existingAppointment) {
+      return NextResponse.json({ error: "You already have an appointment" }, { status: 400 });
     }
 
+    // Find available slot
+    const availability = await prisma.availability.findUnique({
+      where: { dateTime: new Date(dateTime) },
+    });
+
+    if (!availability || availability.isBooked) {
+      return NextResponse.json({ error: "Time slot is already booked" }, { status: 400 });
+    }
+
+    // Create appointment
     const appointment = await prisma.appointment.create({
       data: {
         userId,
-        date: new Date(date),
-        time,
+        availabilityId: availability.id,
         notes: notes || "",
-        availabilityId: parsedAvailabilityId,
       },
     });
 
-    // ✅ Update availability after booking
+    // Mark slot as booked
     await prisma.availability.update({
-      where: { id: parsedAvailabilityId },
-      data: { isAvailable: false }, // Now the time slot is booked
+      where: { id: availability.id },
+      data: { isBooked: true },
     });
 
     console.log("✅ Appointment successfully created:", appointment);
@@ -59,81 +65,91 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "No authorization token" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user) {
+      console.warn("⚠️ Unauthorized user.");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.replace("Bearer ", "").trim();
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    const userId = Number(session.user.id);
+    if (isNaN(userId)) {
+      return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
-    const userId = (decoded as any).id;
-    console.log("✅ User ID:", userId);
+    const isAdmin = session.user.email === "art.bertes@gmail.com";
 
+    console.log("🔹 Authorized user:", session.user);
+
+    // Fetch appointments
     const appointments = await prisma.appointment.findMany({
+      where: isAdmin ? {} : { userId },
       select: {
         id: true,
-        date: true,
-        time: true,
         notes: true,
-        user: {
-          select: { name: true },
-        },
+        user: { select: { name: true } },
+        availability: { select: { dateTime: true } },
+        address: true
       },
     });
 
-    console.log("📌 Appointments found:", appointments.length);
+    if (!appointments || appointments.length === 0) {
+      console.warn("⚠️ No appointments found.");
+      return NextResponse.json([]);
+    }
+    console.log('asdkf', appointments)
+    // Format appointments
+    const formattedAppointments = appointments.map((appointment) => ({
+      id: appointment.id,
+      notes: appointment.notes || "",
+      date: appointment.availability?.dateTime
+        ? appointment.availability.dateTime.toISOString().split("T")[0]
+        : "No date specified",
+      time: appointment.availability?.dateTime
+        ? appointment.availability.dateTime.toISOString().split("T")[1].slice(0, 5)
+        : "No time specified",
+      user: appointment.user.name || "Unknown",
+      address: appointment.address || ""
+    }));
 
-    return NextResponse.json(appointments.length ? appointments : []); // ✅ Always return an array
+    console.log("📌 Appointments found:", formattedAppointments);
+
+    return NextResponse.json(formattedAppointments);
   } catch (error) {
     console.error("❌ Server error:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
+const ADMIN_EMAIL = "art.bertes@gmail.com"; // Admin email
+
 export async function DELETE(request: NextRequest) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "No authorization token" }, { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session) {
+      return NextResponse.json({ error: "Unauthorized request" }, { status: 401 });
     }
 
-    const token = authHeader.replace("Bearer ", "").trim();
-    let decoded: JwtPayload;
-
-    try {
-      decoded = jwt.verify(token, JWT_SECRET) as JwtPayload; // ✅ Cast to JwtPayload
-    } catch (error) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
+    const userEmail = session.user?.email ?? "";
+    if (!userEmail) {
+      return NextResponse.json({ error: "Invalid user email" }, { status: 400 });
     }
 
-    const userId = decoded.id as number; // ✅ Explicitly specify that id is a number
-    if (!userId) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+      select: { id: true, email: true },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const isAdmin = userId === 1; // ✅ Check if the user is an admin
-
-    // ✅ Read request body
-    let body;
-    try {
-      body = await request.json();
-      console.log("📌 Request body:", body);
-    } catch (error) {
-      return NextResponse.json({ error: "Error reading request data" }, { status: 400 });
-    }
-
-    const { appointmentId } = body;
+    const { appointmentId } = await request.json();
     if (!appointmentId || isNaN(Number(appointmentId))) {
       return NextResponse.json({ error: "Invalid appointment ID" }, { status: 400 });
     }
 
-    // ✅ Check if the appointment exists
+    // Find the appointment
     const appointment = await prisma.appointment.findUnique({
       where: { id: Number(appointmentId) },
       select: { id: true, userId: true, availabilityId: true },
@@ -143,24 +159,24 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
     }
 
-    // ✅ Check if the user has permission to delete the appointment
-    if (!isAdmin && appointment.userId !== userId) {
+    // Check if the user is the owner or an admin
+    const isAdmin = user.email === ADMIN_EMAIL;
+
+    if (!isAdmin && appointment.userId !== user.id) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    // ✅ Delete the appointment
-    await prisma.appointment.delete({
-      where: { id: appointment.id },
-    });
+    // Delete appointment
+    await prisma.appointment.delete({ where: { id: appointment.id } });
 
-    // ✅ Free up the availability slot
+    // Free the time slot
     await prisma.availability.update({
       where: { id: appointment.availabilityId },
-      data: { isAvailable: true },
+      data: { isBooked: false },
     });
 
     console.log("✅ Appointment deleted:", appointment.id);
-    return NextResponse.json({ success: true, message: "Appointment canceled" });
+    return NextResponse.json({ success: true, message: "Appointment deleted" });
   } catch (error) {
     console.error("❌ Error deleting appointment:", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });

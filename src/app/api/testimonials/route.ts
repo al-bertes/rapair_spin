@@ -1,67 +1,89 @@
-import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-import { prisma } from "../../../../prisma/prisma-client";
+import { PrismaClient } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/route";
+import { NextResponse } from "next/server";
 
-const JWT_SECRET = "your_secret_key"; // ❗ Замени на свой ключ
-// 📌 Получение списка отзывов (GET /api/testimonials)
+const prisma = new PrismaClient();
+
+// 🔹 Получение отзывов
 export async function GET() {
   try {
     const testimonials = await prisma.testimonial.findMany({
-      include: {
-        user: true, // Подгружаем данные пользователя
-      },
+      orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(
-      testimonials.map((t) => ({
-        id: t.id,
-        user: t.user ? t.user.name : t.userName || "Аноним", // Если есть user, берем его имя, иначе userName
-        message: t.message,
-        rating: t.rating,
-        createdAt: t.createdAt,
-      })),
-      { status: 200 }
-    );
+    return NextResponse.json(testimonials);
   } catch (error) {
     console.error("❌ Ошибка получения отзывов:", error);
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
 
-// 📌 Создание отзыва (POST /api/testimonials)
-export async function POST(request: NextRequest) {
+// 🔹 Создание отзыва (админ может создать от любого имени)
+export async function POST(req: Request) {
   try {
-    const authHeader = request.headers.get("Authorization");
-    if (!authHeader) {
-      return NextResponse.json({ error: "Нет токена авторизации" }, { status: 401 });
+    const { userName, message, rating } = await req.json();
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const token = authHeader.replace("Bearer ", "").trim();
-    let decoded;
-    try {
-      decoded = jwt.verify(token, JWT_SECRET);
-    } catch (error) {
-      return NextResponse.json({ error: "Неверный или устаревший токен" }, { status: 401 });
+    // Проверяем, является ли пользователь администратором
+    const isAdmin = session.user.email === "art.bertes@gmail.com";
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Only admin can create testimonials." }, { status: 403 });
     }
 
-    const userId = (decoded as any).id;
-    let { userName, message, rating } = await request.json();
-
-    if (!message.trim() || !rating) {
-      return NextResponse.json({ error: "Некорректные данные" }, { status: 400 });
-    }
-
+    // Создаём отзыв с произвольным именем
     const testimonial = await prisma.testimonial.create({
       data: {
-        userId: userId !== 1 ? userId : null,
-        userName: userId === 1 ? userName : null,
+        userName: userName || "Без имени",
         message,
         rating,
       },
     });
 
-    return NextResponse.json(testimonial, { status: 201 });
+    return NextResponse.json(testimonial);
   } catch (error) {
+    console.error("❌ Ошибка создания отзыва:", error);
     return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
   }
 }
+
+// 🔹 Удаление отзыва (админ может удалять любые отзывы)
+
+// 🔹 Удаление отзыва по ID (доступно только администратору)
+export async function DELETE(req: Request) {
+  try {
+    const session = await getServerSession(authOptions);
+
+    if (!session || !session.user?.email) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Проверяем, является ли пользователь администратором
+    const isAdmin = session.user.email === "art.bertes@gmail.com";
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Only admin can delete testimonials." }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "ID is required" }, { status: 400 });
+    }
+
+    // Удаляем отзыв по ID
+    await prisma.testimonial.delete({
+      where: { id: parseInt(id) },
+    });
+
+    return NextResponse.json({ message: "Отзыв успешно удалён!" });
+  } catch (error) {
+    console.error("❌ Ошибка удаления отзыва:", error);
+    return NextResponse.json({ error: "Ошибка сервера" }, { status: 500 });
+  }
+}
+
