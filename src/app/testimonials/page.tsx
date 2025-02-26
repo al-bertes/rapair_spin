@@ -12,11 +12,14 @@ import {
   Rating,
   Button,
   Avatar,
+  TextField,
+  Paper,
+  Stack,
 } from "@mui/material";
-import { useSession } from "next-auth/react"; 
+import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 
-// 🎨 Цветовая палитра для нейтральных аватарок
+// Цветовая палитра для нейтральных аватарок
 const avatarColors = ["#FFC107", "#03A9F4", "#8BC34A", "#FF5722", "#9C27B0", "#607D8B", "#FF9800"];
 
 const fadeInUp = {
@@ -25,7 +28,7 @@ const fadeInUp = {
 };
 
 export default function TestimonialsPage() {
-  const { data: session, status } = useSession(); 
+  const { data: session } = useSession();
   const [testimonials, setTestimonials] = useState<
     { id: number; userName: string | null; message: string; rating: number }[]
   >([]);
@@ -80,6 +83,38 @@ export default function TestimonialsPage() {
     }
   };
 
+  const handleSubmit = async () => {
+    if (!name || !message || !rating) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const response = await fetch("/api/testimonials", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userName: name, message, rating }),
+      });
+
+      if (response.ok) {
+        const newTestimonial = await response.json();
+        setTestimonials((prev) => [newTestimonial, ...prev]);
+        setName("");
+        setMessage("");
+        setRating(5);
+        alert("Testimonial added successfully!");
+      } else {
+        alert("Error adding testimonial.");
+      }
+    } catch (error) {
+      console.error("❌ Error adding testimonial:", error);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <Container maxWidth="md" sx={{ paddingY: 4 }}>
       <Typography
@@ -100,77 +135,119 @@ export default function TestimonialsPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <Grid container spacing={4}>
-          {testimonials.map(({ id, userName, message, rating }) => {
-            const initials = (userName || "A").slice(0, 1).toUpperCase();
-            const avatarColor = avatarColors[id % avatarColors.length];
-
-            return (
-              <Grid item xs={12} sm={6} key={id}>
-                <motion.div
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, amount: 0.2 }}
-                  variants={fadeInUp}
-                  whileHover={{ scale: 1.05 }}
+        <>
+          {isAdmin && (
+            <Paper sx={{ mb: 4, p: 3 }} elevation={3}>
+              <Typography variant="h5" gutterBottom>
+                Add a New Testimonial
+              </Typography>
+              <Stack spacing={2}>
+                <TextField
+                  label="Name"
+                  fullWidth
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+                <TextField
+                  label="Message"
+                  fullWidth
+                  multiline
+                  rows={3}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                />
+                <Box>
+                  <Typography gutterBottom>Rating:</Typography>
+                  <Rating
+                    value={rating}
+                    precision={0.5}
+                    onChange={(e, newValue) => setRating(newValue)}
+                  />
+                </Box>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={handleSubmit}
+                  disabled={submitting}
                 >
-                  <Card
-                    elevation={3}
-                    sx={{
-                      borderRadius: "16px",
-                      boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
-                      overflow: "hidden",
-                      transition: "all 0.3s",
-                      backgroundColor: "#ffffff",
-                    }}
-                  >
-                    <CardContent sx={{ textAlign: "center", padding: 3 }}>
-                      <Avatar
-                        sx={{
-                          width: 80,
-                          height: 80,
-                          margin: "auto",
-                          mb: 2,
-                          backgroundColor: avatarColor,
-                          color: "#fff",
-                          fontSize: "2rem",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {initials}
-                      </Avatar>
-                      <Typography variant="h6" gutterBottom>
-                        {userName || "Anonymous"}
-                      </Typography>
-                      <Rating value={rating} precision={0.5} readOnly sx={{ mb: 2 }} />
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: "#555",
-                          fontStyle: "italic",
-                          lineHeight: 1.6,
-                        }}
-                      >
-                        "{message}"
-                      </Typography>
+                  {submitting ? "Submitting..." : "Add Testimonial"}
+                </Button>
+              </Stack>
+            </Paper>
+          )}
 
-                      {isAdmin && (
-                        <Button
-                          variant="contained"
-                          color="error"
-                          sx={{ marginTop: 2 }}
-                          onClick={() => handleDeleteTestimonial(id)}
+          <Grid container spacing={4}>
+            {testimonials.map(({ id, userName, message, rating }) => {
+              const initials = (userName || "A").slice(0, 1).toUpperCase();
+              const avatarColor = avatarColors[id % avatarColors.length];
+
+              return (
+                <Grid item xs={12} sm={6} key={id}>
+                  <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.2 }}
+                    variants={fadeInUp}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <Card
+                      elevation={3}
+                      sx={{
+                        borderRadius: "16px",
+                        boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.1)",
+                        overflow: "hidden",
+                        transition: "all 0.3s",
+                        backgroundColor: "#ffffff",
+                      }}
+                    >
+                      <CardContent sx={{ textAlign: "center", padding: 3 }}>
+                        <Avatar
+                          sx={{
+                            width: 80,
+                            height: 80,
+                            margin: "auto",
+                            mb: 2,
+                            backgroundColor: avatarColor,
+                            color: "#fff",
+                            fontSize: "2rem",
+                            fontWeight: "bold",
+                          }}
                         >
-                          Delete Testimonial
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </Grid>
-            );
-          })}
-        </Grid>
+                          {initials}
+                        </Avatar>
+                        <Typography variant="h6" gutterBottom>
+                          {userName || "Anonymous"}
+                        </Typography>
+                        <Rating value={rating} precision={0.5} readOnly sx={{ mb: 2 }} />
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: "#555",
+                            fontStyle: "italic",
+                            lineHeight: 1.6,
+                          }}
+                        >
+                          &quot;{message}&quot;
+                        </Typography>
+
+                        {isAdmin && (
+                          <Button
+                            variant="contained"
+                            color="error"
+                            sx={{ marginTop: 2 }}
+                            onClick={() => handleDeleteTestimonial(id)}
+                          >
+                            Delete Testimonial
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </>
       )}
     </Container>
   );

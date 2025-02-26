@@ -1,58 +1,69 @@
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
 export async function DELETE(req: Request) {
   try {
-    console.log("📡 Запрос на удаление апоинта...");
+    console.log("📡 Request to delete appointment...");
 
-    // ✅ Получаем сессию пользователя
+    // ✅ Get the user session
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.email) {
-      console.error("❌ Ошибка: пользователь не авторизован");
+      console.error("❌ Error: User not authenticated");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { appointmentId } = await req.json();
     if (!appointmentId) {
-      console.error("❌ Ошибка: не передан ID апоинта.");
-      return NextResponse.json({ error: "Не передан ID апоинта." }, { status: 400 });
+      console.error("❌ Error: Appointment ID not provided.");
+      return NextResponse.json({ error: "Appointment ID not provided." }, { status: 400 });
     }
 
-    console.log("📌 Удаляем апоинт с ID:", appointmentId);
+    console.log("📌 Deleting appointment with ID:", appointmentId);
 
-    // ✅ Получаем запись
+    // ✅ Get the appointment record
     const appointment = await prisma.appointment.findUnique({
       where: { id: appointmentId },
-      include: { availability: true }, // Получаем связанные данные
+      include: { availability: true }, // Fetch related availability data
     });
 
     if (!appointment) {
-      console.error("❌ Ошибка: апоинт не найден.");
-      return NextResponse.json({ error: "Апоинт не найден." }, { status: 404 });
+      console.error("❌ Error: Appointment not found.");
+      return NextResponse.json({ error: "Appointment not found." }, { status: 404 });
     }
 
-    // ✅ Удаляем апоинт
+    // ✅ Delete the appointment
     await prisma.appointment.delete({
       where: { id: appointmentId },
     });
 
-    // ✅ Освобождаем слот (isBooked = false)
+    // ✅ Free up the slot (set isBooked to false)
     if (appointment.availability) {
       await prisma.availability.update({
         where: { id: appointment.availability.id },
         data: { isBooked: false },
       });
-      console.log(`✅ Слот ${appointment.availability.dateTime} снова доступен.`);
+      console.log(`✅ Slot ${appointment.availability.dateTime} is now available.`);
     }
 
-    console.log("✅ Апоинт успешно удалён.");
-    return NextResponse.json({ message: "Запись успешно отменена." });
-  } catch (error: any) {
-    console.error("❌ Ошибка удаления апоинта:", error);
-    return NextResponse.json({ error: "Ошибка сервера", details: error.message }, { status: 500 });
+    console.log("✅ Appointment successfully deleted.");
+    return NextResponse.json({ message: "Appointment successfully canceled." });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("❌ Error deleting appointment:", error.message);
+      return NextResponse.json(
+        { error: "Server error", details: error.message },
+        { status: 500 }
+      );
+    } else {
+      console.error("❌ Unknown error while deleting appointment:", error);
+      return NextResponse.json(
+        { error: "Unknown server error" },
+        { status: 500 }
+      );
+    }
   }
 }

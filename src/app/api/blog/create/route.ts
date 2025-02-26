@@ -5,7 +5,7 @@ import formidable, { File } from "formidable";
 import fs from "fs/promises";
 import path from "path";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "../../../../../prisma/prisma-client";
 
 const uploadDir = path.join(process.cwd(), "public/uploads");

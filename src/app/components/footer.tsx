@@ -156,7 +156,7 @@ const Footer = () => {
               color: "#e0e0e0",
             }}
           >
-            © {new Date().getFullYear()} Pavel's Appliance Repair. All rights reserved.
+            © {new Date().getFullYear()} Pavel&apos;s Appliance Repair. All rights reserved.
           </Typography>
         </Box>
       </Container>

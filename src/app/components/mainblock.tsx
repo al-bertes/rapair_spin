@@ -93,7 +93,7 @@ export default function HeroSection() {
                     sx={{ mb: 4 }}
                   >
                     Have questions or need urgent assistance? Contact our team today! <br />
-                    We're here to help you with all your appliance repair needs.
+                    We&apos;re here to help you with all your appliance repair needs.
                   </Typography>
                   <ContactForm closePopup={closePopup} />
                 </Box>
@@ -137,7 +137,7 @@ export default function HeroSection() {
                   color="text.secondary"
                   sx={{ mb: 2, maxWidth: "500px" }}
                 >
-                  Pavel's Appliance Repair offers fast, reliable, and affordable appliance repair services 
+                  Pavel&apos;s Appliance Repair offers fast, reliable, and affordable appliance repair services 
                   to homeowners throughout the Twin Cities. We specialize in repairing washers, dryers, 
                   refrigerators, dishwashers, ovens, and stoves.
                 </Typography>
@@ -167,9 +167,9 @@ export default function HeroSection() {
                     sx={{ mb: 4, maxWidth: "500px" }}
                   >
                     We understand the importance of trust when inviting a service professional into your home. 
-                    That's why we offer transparent pricing, detailed explanations, and a satisfaction guarantee 
-                    on all our work. Whether it's a leaky washer, a noisy fridge, or an oven that won’t heat up, 
-                    our goal is to provide lasting solutions that extend your appliance's lifespan and efficiency.
+                    That&apos;s why we offer transparent pricing, detailed explanations, and a satisfaction guarantee 
+                    on all our work. Whether it&apos;s a leaky washer, a noisy fridge, or an oven that won&apos;t heat up, 
+                    our goal is to provide lasting solutions that extend your appliance&apos;s lifespan and efficiency.
                   </Typography>
                 )}
 

@@ -59,8 +59,12 @@ export default function CreateBlogPage() {
       setImage(null);
 
       router.push("/blog");
-    } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred.");
+      }
     }
   };
 

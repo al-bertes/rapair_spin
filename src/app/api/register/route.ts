@@ -24,7 +24,13 @@ export async function POST(req: Request) {
     });
 
     return NextResponse.json({ message: "User created successfully", user }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error creating user:", error.message);
+      return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+    } else {
+      console.error("Unknown error:", error);
+      return NextResponse.json({ error: "Unknown server error" }, { status: 500 });
+    }
   }
 }

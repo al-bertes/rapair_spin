@@ -56,39 +56,22 @@ const BlogSection = () => {
     fetchBlogPosts();
   }, []);
 
-  const handleDelete = async (id: number) => {
-    try {
-      const response = await fetch("/api/blog/delete", {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to delete the blog post");
-      }
-
-      setBlogPosts((prevPosts) => prevPosts.filter((post) => post.id !== id));
-    } catch (error) {
-      console.error("Error deleting post:", error);
-    }
-  };
-
   if (status === "loading" || loading) {
     return <CircularProgress sx={{ display: "block", margin: "auto", mt: 4 }} />;
   }
 
   if (error) {
-    return <Typography color="error" sx={{ textAlign: "center", mt: 4 }}>Error: {error}</Typography>;
+    return (
+      <Typography color="error" sx={{ textAlign: "center", mt: 4 }}>
+        Error: {error}
+      </Typography>
+    );
   }
 
   return (
     <>
       <Head>
-        <title>Pavel's Appliance Repair Blog | Tips & Guides</title>
+        <title>Pavel&apos;s Appliance Repair Blog | Tips & Guides</title>
         <meta
           name="description"
           content="Discover useful tips and guides on appliance maintenance and repair. Learn from the experts at Pavel's Appliance Repair in the Twin Cities."
@@ -99,16 +82,16 @@ const BlogSection = () => {
         />
         <link rel="canonical" href="https://www.pavelsappliancerepair.com/blog" />
       </Head>
-      
+
       <Box sx={{ padding: 4, marginBottom: 2, maxWidth: "1200px", mx: "auto" }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ marginBottom: 3 }}>
-          <Typography 
-            variant="h4" 
+          <Typography
+            variant="h4"
             sx={{
               fontFamily: "'Poppins', sans-serif",
               fontWeight: "bold",
               fontSize: isMobile ? "1.8rem" : "2.5rem",
-              color: "#333"
+              color: "#333",
             }}
           >
             Blog Section
@@ -130,7 +113,14 @@ const BlogSection = () => {
                   whileHover={{ scale: 1.05, translateY: -5 }}
                   transition={{ type: "spring", stiffness: 200, damping: 15 }}
                 >
-                  <Card sx={{ height: "100%", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+                  <Card
+                    sx={{
+                      height: "100%",
+                      cursor: "pointer",
+                      position: "relative",
+                      overflow: "hidden",
+                    }}
+                  >
                     <Link href={`/blog/${post.id}`} passHref>
                       <CardMedia
                         component="img"
@@ -140,23 +130,23 @@ const BlogSection = () => {
                         sx={{ objectFit: "cover" }}
                       />
                       <CardContent>
-                        <Typography 
-                          variant="h6" 
+                        <Typography
+                          variant="h6"
                           gutterBottom
-                          sx={{ 
-                            fontFamily: "'Poppins', sans-serif", 
-                            fontWeight: "600", 
-                            fontSize: isMobile ? "1.2rem" : "1.5rem" 
+                          sx={{
+                            fontFamily: "'Poppins', sans-serif",
+                            fontWeight: "600",
+                            fontSize: isMobile ? "1.2rem" : "1.5rem",
                           }}
                         >
                           {post.title}
                         </Typography>
-                        <Typography 
-                          variant="body2" 
+                        <Typography
+                          variant="body2"
                           color="text.secondary"
-                          sx={{ 
-                            fontFamily: "'Poppins', sans-serif", 
-                            fontSize: isMobile ? "0.9rem" : "1rem" 
+                          sx={{
+                            fontFamily: "'Poppins', sans-serif",
+                            fontSize: isMobile ? "0.9rem" : "1rem",
                           }}
                         >
                           {post.content.substring(0, 100)}...
@@ -168,15 +158,15 @@ const BlogSection = () => {
                             marginTop: 2,
                           }}
                         >
-                          <Typography 
-                            variant="caption" 
+                          <Typography
+                            variant="caption"
                             color="text.secondary"
                             sx={{ fontFamily: "'Poppins', sans-serif" }}
                           >
                             By {post.author?.name || "Pavel Pavluchenko"}
                           </Typography>
-                          <Typography 
-                            variant="caption" 
+                          <Typography
+                            variant="caption"
                             color="text.secondary"
                             sx={{ fontFamily: "'Poppins', sans-serif" }}
                           >

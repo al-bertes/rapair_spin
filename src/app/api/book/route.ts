@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { NextResponse } from "next/server";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";
@@ -10,23 +10,23 @@ const prisma = new PrismaClient();
 
 export async function POST(req: Request) {
   try {
-    console.log("📡 Запрос на бронирование получен...");
+    console.log("📡 Booking request received...");
 
-    // ✅ Парсим JSON-запрос
+    // ✅ Parse the JSON request
     const { date, time, notes, address } = await req.json();
-    console.log(`📅 Дата: ${date} ⏰ Время: ${time} 📝 Notes: ${notes}`);
+    console.log(`📅 Date: ${date} ⏰ Time: ${time} 📝 Notes: ${notes}`);
 
-    // ✅ Получаем сессию
+    // ✅ Get the user session
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ✅ Находим пользователя по email
+    // ✅ Find the user by email
     let user = await prisma.user.findUnique({ where: { email: session.user.email } });
 
     if (!user) {
-      console.log("🆕 Создаём нового пользователя...");
+      console.log("🆕 Creating a new user...");
       user = await prisma.user.create({
         data: {
           name: session.user.name || "New User",
@@ -36,31 +36,31 @@ export async function POST(req: Request) {
       });
     }
 
-    // ✅ Проверяем, есть ли уже запись у пользователя
+    // ✅ Check if the user already has an appointment
     const existingAppointment = await prisma.appointment.findUnique({
       where: { userId: user.id },
     });
 
     if (existingAppointment) {
       return NextResponse.json(
-        { error: "У вас уже есть активный апоинтмент." },
+        { error: "You already have an active appointment." },
         { status: 400 }
       );
     }
 
-    // ✅ Преобразуем дату в точный формат UTC
+    // ✅ Convert the date to the exact UTC format
     const selectedDateTime = dayjs.utc(`${date}T${time}`).toISOString();
-    console.log("🔍 Ищем свободный слот на:", selectedDateTime);
+    console.log("🔍 Looking for an available slot on:", selectedDateTime);
 
-    // ✅ Проверяем все доступные слоты в базе для отладки
+    // ✅ Check all available slots in the database for debugging
     const allSlots = await prisma.availability.findMany({
       where: { isBooked: false },
       select: { id: true, dateTime: true, isBooked: true },
     });
 
-    console.log("📜 Все доступные слоты в базе:", allSlots);
+    console.log("📜 All available slots in the database:", allSlots);
 
-    // ✅ Исправленный поиск доступности
+    // ✅ Corrected availability search
     const availability = await prisma.availability.findFirst({
       where: {
         dateTime: selectedDateTime,
@@ -68,16 +68,16 @@ export async function POST(req: Request) {
       },
     });
 
-    console.log("🧐 Найдено:", availability);
+    console.log("🧐 Found:", availability);
 
     if (!availability) {
       return NextResponse.json(
-        { error: "Выбранное время уже забронировано или не найдено." },
+        { error: "The selected time is already booked or not available." },
         { status: 400 }
       );
     }
 
-    // ✅ Создаём запись в Appointment
+    // ✅ Create an appointment record
     const appointment = await prisma.appointment.create({
       data: {
         userId: user.id,
@@ -87,16 +87,22 @@ export async function POST(req: Request) {
       },
     });
 
-    // ✅ Обновляем статус Availability
+    // ✅ Update the availability status
     await prisma.availability.update({
       where: { id: availability.id },
       data: { isBooked: true },
     });
 
-    console.log("✅ Запись успешно создана!");
-    return NextResponse.json({ message: "Запись успешно создана!", appointment });
-  } catch (error: any) {
-    console.error("❌ Ошибка бронирования:", error);
-    return NextResponse.json({ error: "Ошибка сервера", details: error.message }, { status: 500 });
+    console.log("✅ Appointment created successfully!");
+    return NextResponse.json({ message: "Appointment created successfully!", appointment });
+    
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("❌ Booking error:", error.message);
+      return NextResponse.json({ error: "Server error", details: error.message }, { status: 500 });
+    } else {
+      console.error("❌ Unknown booking error:", error);
+      return NextResponse.json({ error: "Unknown server error" }, { status: 500 });
+    }
   }
 }

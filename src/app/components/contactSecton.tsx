@@ -52,7 +52,7 @@ export default function ContactSection() {
           >
             Have questions or need urgent assistance? Contact our team today!
             <br />
-            We're here to help you with all your washing machine repair needs.
+            We&apos;re here to help you with all your washing machine repair needs.
           </Typography>
           <Box
             className="contact__container"

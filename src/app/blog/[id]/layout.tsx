@@ -8,7 +8,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Head>
-        <title>Pavel's Appliance Repair Blog | Tips, Guides & Maintenance Advice</title>
+        <title>Pavel&apos;s Appliance Repair Blog | Tips, Guides & Maintenance Advice</title>
         <meta
           name="description"
           content="Stay updated with the latest tips, expert advice, and practical guides on appliance repair and maintenance. Read our blog to keep your home running smoothly."

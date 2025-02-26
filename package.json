@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "next lint",
-    "sass": "sass --watch src/styles/scss:src/app"
+    "sass": "sass --watch src/styles/scss:src/app",
+    "build": "prisma generate && next build"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

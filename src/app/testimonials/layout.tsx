@@ -10,7 +10,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <>
       <Head>
-        <title>Customer Testimonials - Pavel's Appliance Repair</title>
+        <title>Customer Testimonials - Pavel&apos;s Appliance Repair</title>
         <meta
           name="description"
           content="Read real customer reviews and testimonials about Pavel's Appliance Repair services in Twin Cities. We take pride in delivering fast, reliable, and professional appliance repair solutions."

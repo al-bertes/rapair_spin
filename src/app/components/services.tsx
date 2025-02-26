@@ -8,8 +8,7 @@ import {
   Card,
   CardContent,
   CardMedia,
-  useMediaQuery,
-  Button,
+  useMediaQuery
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 

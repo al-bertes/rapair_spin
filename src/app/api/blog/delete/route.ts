@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Import NextAuth config
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "../../../../../prisma/prisma-client";
 
 export async function DELETE(request: NextRequest) {

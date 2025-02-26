@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../../prisma/prisma-client";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest) {
   try {
-    const { id } = params;
+    // Извлекаем параметр 'id' из URL
+    const id = request.nextUrl.pathname.split("/").pop();
 
     if (!id) {
       return NextResponse.json(

@@ -65,7 +65,7 @@ export default function TestimonialsSection() {
         variant="subtitle1" 
         sx={{ mb: 4, color: "#666", fontFamily: "'Poppins', sans-serif" }}
       >
-        Our customers trust us. Here's what they have to say.
+        Our customers trust us. Here&apos;s what they have to say.
       </Typography>
 
       {loading ? (
@@ -143,7 +143,7 @@ export default function TestimonialsSection() {
                         color: "#555"
                       }}
                     >
-                      "{message}"
+                      &apos;{message}&apos;
                     </Typography>
                   </CardContent>
                 </Card>

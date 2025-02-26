@@ -19,11 +19,13 @@ export const DELETE = async () => {
       appointmentsDeleted: deleteAppointments.count,
       availabilityDeleted: deleteAvailability.count,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
     console.error("❌ Error clearing availability:", error.message);
     return NextResponse.json(
       { error: "Failed to clear availability" },
       { status: 500 }
     );
+  }
   }
 };

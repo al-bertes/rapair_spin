@@ -8,7 +8,7 @@ import utc from "dayjs/plugin/utc";
 dayjs.extend(utc);
 
 /**
- * Генерация доступных слотов на основе данных администратора
+ * Generates available slots based on admin-provided data
  */
 export const POST = async (req: Request) => {
   try {
@@ -24,7 +24,7 @@ export const POST = async (req: Request) => {
     const start = dayjs.utc(startDate);
     const end = dayjs.utc(endDate);
 
-    const availabilityData = [];
+    const availabilityData: { dateTime: Date; isBooked: boolean }[] = [];
     let currentDate = start;
 
     while (currentDate.isBefore(end) || currentDate.isSame(end, "day")) {
@@ -39,13 +39,13 @@ export const POST = async (req: Request) => {
       currentDate = currentDate.add(1, "day");
     }
 
-    console.log(`🛠️ Очищаем БД перед генерацией...`);
+    console.log(`🛠️ Clearing the database before generating slots...`);
     await prisma.$transaction([
       prisma.appointment.deleteMany({}),
       prisma.availability.deleteMany({}),
     ]);
 
-    console.log(`🚀 Добавляем ${availabilityData.length} слотов...`);
+    console.log(`🚀 Adding ${availabilityData.length} slots...`);
 
     const batchSize = 1000;
     for (let i = 0; i < availabilityData.length; i += batchSize) {
@@ -57,11 +57,19 @@ export const POST = async (req: Request) => {
     return NextResponse.json({
       message: `Successfully generated ${availabilityData.length} availability slots!`,
     });
-  } catch (error: any) {
-    console.error("❌ Error generating availability:", error.message);
-    return NextResponse.json(
-      { error: "Failed to generate availability" },
-      { status: 500 }
-    );
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("❌ Error generating availability:", error.message);
+      return NextResponse.json(
+        { error: "Failed to generate availability", details: error.message },
+        { status: 500 }
+      );
+    } else {
+      console.error("❌ Unknown error occurred:", error);
+      return NextResponse.json(
+        { error: "An unknown error occurred while generating availability" },
+        { status: 500 }
+      );
+    }
   }
 };

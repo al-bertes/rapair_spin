@@ -6,7 +6,6 @@ import { signIn } from "next-auth/react"; // ✅ NextAuth
 import { useSession } from "next-auth/react"; // ✅ Добавляем useSession
 import { Box, Button, Container, TextField, Typography, Alert } from "@mui/material";
 import AuthButton from "../components/AuthButton";
-import { signOut } from "next-auth/react";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
