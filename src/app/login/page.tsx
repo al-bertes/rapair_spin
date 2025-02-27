@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react"; // ✅ NextAuth
-import { useSession } from "next-auth/react"; // ✅ Добавляем useSession
+import { signIn, getSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { Box, Button, Container, TextField, Typography, Alert } from "@mui/material";
 import AuthButton from "../components/AuthButton";
 
@@ -12,55 +12,60 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { update } = useSession(); // ✅ Подключаем update()
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    console.log("Session status:", status);
+    console.log("Session data:", session);
+
+    if (status === "loading") return;
+
+    if (status === "authenticated" && session?.user) {
+        console.log("✅ Пользователь аутентифицирован, но редирект отключен");
+        // router.replace("/profile");
+    } else if (status === "unauthenticated") {
+        console.log("🚫 Пользователь не аутентифицирован, но редирект отключен");
+        // router.replace("/login");
+    }
+}, [status, session, router]);
 
 const handleLogin = async (e: React.FormEvent) => {
   e.preventDefault();
   setError("");
 
   const res = await signIn("credentials", {
-    redirect: false,
-    email,
-    password,
+      redirect: false,
+      email,
+      password,
   });
 
-  console.log("Login response:", res);
+  console.log("📝 SignIn response:", res);
 
   if (!res || res.error) {
-    setError(res?.error || "Login failed. Please try again.");
-    setPassword(""); // ❌ Очищаем пароль при ошибке
-
-    // ✅ Если пользователя нет, предлагаем регистрацию
-    if (res?.error === "No user found with this email") {
-      setError("No account found. Would you like to sign up?");
-    }
+      setError(res?.error || "Login failed. Please try again.");
+      setPassword("");
+      if (res?.error === "No user found with this email") {
+          setError("No account found. Would you like to sign up?");
+      }
   } else {
-    try {
-      await new Promise(resolve => setTimeout(resolve, 500)); // 🔹 Ждем перед обновлением сессии
-      await update(); // ✅ Принудительное обновление сессии
-      console.log("Session updated!"); // ✅ Проверяем обновилась ли сессия
-      router.refresh(); // ✅ Обновляем страницу
-      router.replace("/profile"); // ✅ Перенаправляем пользователя
-    } catch (error) {
-      console.error("Error updating session:", error);
-    }
+      console.log("✅ Successfully logged in!");
+      await getSession(); // Принудительное обновление сессии
+      window.location.href = "/profile";
   }
 };
-
-  
-
 
 
   return (
     <Container maxWidth="xs">
       <Box sx={{ marginTop: 8, display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <Typography component="h1" variant="h5">Login</Typography>
+        <Typography component="h1" variant="h5">
+          Login
+        </Typography>
 
         {error && (
           <Box sx={{ mt: 2, textAlign: "center" }}>
             <Alert severity="error">{error}</Alert>
 
-            {/* ✅ Кнопка регистрации, если пользователя нет */}
             {error === "No account found. Would you like to sign up?" && (
               <Button
                 variant="outlined"
@@ -101,14 +106,12 @@ const handleLogin = async (e: React.FormEvent) => {
           />
 
           <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-            Login
+            sign in
           </Button>
 
-          {/* ✅ Вход через Google */}
           <AuthButton />
         </Box>
       </Box>
     </Container>
   );
-
 }

@@ -1,5 +1,3 @@
-// src/lib/authOptions.ts
-
 import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
@@ -44,21 +42,33 @@ export const authOptions: AuthOptions = {
     }),
   ],
 
+  pages: {
+    signIn: "/login", // Указываем страницу входа
+    error: "/login", // Отображение ошибок на той же странице
+  },
+
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.id = String(user.id);
+      if (user?.id) {
+          token.id = user.id.toString();
       }
+      console.log("🔑 JWT Callback - Token:", token);
       return token;
-    },
+  },
     
-    async session({ session, token }) {
-      if (session.user && typeof token.id === "string") {
-        session.user.id = token.id;
-      }
-      return session;
+  async session({ session, token }) {
+    if (session.user) {
+        session.user.id = token.id ? String(token.id) : "";
     }
+    console.log("📦 Session Callback - Session:", session);
+    return session;
+}
+  },
+
+  session: {
+    strategy: "jwt",
   },
 
   secret: process.env.NEXTAUTH_SECRET,
+  debug: true, // Включаем логирование для отладки
 };
