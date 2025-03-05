@@ -127,7 +127,7 @@ export default function RootLayout({
         >
           {children}
         </Container>
-        <Footer />
+        <Footer/>
       </Box>
     </CacheProvider>
   );

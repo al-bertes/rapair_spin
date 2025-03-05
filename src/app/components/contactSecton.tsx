@@ -1,7 +1,8 @@
 "use client";
 
 import React from "react";
-import { Box, Typography, Container } from "@mui/material";
+import { Box, Typography, Container, useMediaQuery } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import ContactForm from "@/app/components/form";
 import { motion } from "framer-motion";
 
@@ -11,13 +12,16 @@ const fadeInUp = {
 };
 
 export default function ContactSection() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Detect mobile screens
+
   return (
     <Box
       component="section"
       id="contact"
       sx={{
         backgroundColor: "#f9f9f9",
-        py: 6,
+        py: isMobile ? 4 : 6, // Less padding on mobile
         px: 3,
         textAlign: "center",
       }}
@@ -30,7 +34,7 @@ export default function ContactSection() {
           variants={fadeInUp}
         >
           <Typography
-            variant="h3"
+            variant={isMobile ? "h4" : "h3"} // Smaller heading for mobile
             component="h2"
             sx={{
               fontFamily: "'Poppins', sans-serif",
@@ -48,6 +52,7 @@ export default function ContactSection() {
               mb: 4,
               fontFamily: "'Poppins', sans-serif",
               color: "#555",
+              fontSize: isMobile ? "0.95rem" : "1.1rem", // Adjusted text size
             }}
           >
             Have questions or need urgent assistance? Contact our team today!
@@ -57,11 +62,12 @@ export default function ContactSection() {
           <Box
             className="contact__container"
             sx={{
-              maxWidth: "600px",
+              maxWidth: isMobile ? "100%" : "600px", // Full width on mobile
               margin: "0 auto",
               backgroundColor: "#ffffff",
               boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-              padding: 4,
+              padding: isMobile ? 3 : 4, // Less padding on mobile
+              px: 2,
               borderRadius: "16px",
             }}
           >

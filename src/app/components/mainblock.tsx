@@ -61,6 +61,7 @@ export default function HeroSection() {
                     borderRadius: "16px",
                     boxShadow: "0 20px 40px rgba(0, 0, 0, 0.1)",
                     padding: 4,
+                    px: 1,
                     textAlign: "center",
                     position: "relative",
                     maxHeight: "90vh",

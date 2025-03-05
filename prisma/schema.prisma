@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
+  id           Int      @id @default(autoincrement())
   name         String
-  email        String        @unique
+  email        String   @unique
   password     String
-  createdAt    DateTime      @default(now())
+  resetToken   String?  @unique
+  resetTokenExpires DateTime?
+  createdAt    DateTime @default(now())
 
-  // ✅ Один пользователь может иметь только один апоинтмент
   appointment  Appointment?
-  
   testimonials Testimonial?
   blogPosts    BlogPost[]
 }
+
 
 model Testimonial {
   id        Int      @id @default(autoincrement())

@@ -9,13 +9,18 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
+
         backgroundColor: "#1976d2",
         color: "#ffffff",
         py: 6,
+        pb: 0,
         borderTop: "1px solid #ddd",
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "250px", // Минимальная высота футера
       }}
     >
-      <Container>
+      <Container sx={{ flex: "1 1 auto" }}> {/* Контент растягивается, оставляя место внизу */}
         <Grid container spacing={4} justifyContent="center">
           <Grid item xs={12} sm={6} md={4}>
             <motion.div
@@ -147,19 +152,20 @@ const Footer = () => {
             </motion.div>
           </Grid>
         </Grid>
-
-        <Box sx={{ textAlign: "center", mt: 4 }}>
-          <Typography
-            variant="body2"
-            sx={{
-              fontFamily: "'Poppins', sans-serif",
-              color: "#e0e0e0",
-            }}
-          >
-            © {new Date().getFullYear()} Pavel&apos;s Appliance Repair. All rights reserved.
-          </Typography>
-        </Box>
       </Container>
+
+      {/* Копирайт теперь прижат к низу */}
+      <Box sx={{ textAlign: "center", mt: "auto", py: 2 }}>
+        <Typography
+          variant="body2"
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            color: "#e0e0e0",
+          }}
+        >
+          © {new Date().getFullYear()} Pavel&apos;s Appliance Repair. All rights reserved.
+        </Typography>
+      </Box>
     </Box>
   );
 };

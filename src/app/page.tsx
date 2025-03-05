@@ -22,15 +22,11 @@ const fadeInUp = {
 export default function Home() {
   return (
     <>
-      <header className="header">
-        <div className="container">
-          <Header />
-        </div>
-      </header>
+      <Header />
 
       <main className="main" id="main">
         <motion.section
-          className="top"
+          className="top py-20 md:py-32 mb-20 md:mb-32"
           initial="hidden"
           animate="visible"
           variants={fadeInUp}
@@ -41,7 +37,7 @@ export default function Home() {
         </motion.section>
 
         <motion.section
-          className="services"
+          className="services py-20 md:py-32 mb-20 md:mb-32"
           id="services"
           initial="hidden"
           animate="visible"
@@ -55,7 +51,7 @@ export default function Home() {
         </motion.section>
 
         <motion.section
-          className="blog"
+          className="blog py-20 md:py-32 mb-20 md:mb-32"
           initial="hidden"
           animate="visible"
           whileInView="visible"
@@ -68,7 +64,7 @@ export default function Home() {
         </motion.section>
 
         <motion.section
-          className="testimonials"
+          className="testimonials py-20 md:py-32 mb-20 md:mb-32"
           id="testimonials"
           initial="hidden"
           animate="visible"

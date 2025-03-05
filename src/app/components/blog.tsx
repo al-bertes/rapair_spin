@@ -52,6 +52,11 @@ const Blog = () => {
     fetchLatestBlog();
   }, []);
 
+  // ✅ Функция для перехода на страницу статьи
+  const handleBlogClick = (id: number) => {
+    router.push(`/blog/${id}`);
+  };
+
   return (
     <Box sx={{ maxWidth: 800, margin: "auto", textAlign: "center", padding: 4 }}>
       <Typography
@@ -75,7 +80,11 @@ const Blog = () => {
             boxShadow: 3, 
             borderRadius: 2,
             overflow: "hidden",
+            cursor: "pointer", // 🔹 Добавляет курсор "рука"
+            transition: "transform 0.2s ease-in-out",
+            "&:hover": { transform: "scale(1.02)" }, // 🔹 Легкий эффект увеличения
           }}
+          onClick={() => handleBlogClick(latestBlog.id)} // ✅ Добавляем клик по карточке
         >
           {latestBlog.imageUrl && (
             <CardMedia
@@ -110,6 +119,19 @@ const Blog = () => {
             >
               {latestBlog.content ? `${latestBlog.content.substring(0, 100)}...` : "No description available"}
             </Typography>
+            
+            {/* 🔹 Кнопка Read More */}
+            <Button 
+              variant="outlined" 
+              color="primary" 
+              sx={{ marginTop: 2, fontSize: "0.9rem" }}
+              onClick={(e) => {
+                e.stopPropagation(); // ✅ Чтобы не срабатывал клик на карточку
+                handleBlogClick(latestBlog.id);
+              }}
+            >
+              Read More
+            </Button>
           </CardContent>
         </Card>
       ) : (

@@ -9,7 +9,9 @@ import {
   CardContent,
   Rating,
   Button,
+  useMediaQuery
 } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 
@@ -24,6 +26,9 @@ export default function TestimonialsSection() {
   >([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // Проверяем мобильное устройство
 
   useEffect(() => {
     const fetchTestimonials = async () => {
@@ -47,16 +52,17 @@ export default function TestimonialsSection() {
     <Box 
       component="section" 
       id="testimonials" 
-      sx={{ backgroundColor: "#f9f9f9", py: 6, px: 3, textAlign: "center" }}
+      sx={{ py: 6, px: 3, textAlign: "center" }}
     >
       <Typography
-        variant="h3"
+        variant={isMobile ? "h4" : "h3"} // Изменяем размер заголовка на мобильных устройствах
         gutterBottom
         sx={{
           fontFamily: "'Poppins', sans-serif",
           fontWeight: "bold",
           color: "#333",
           marginBottom: 4,
+          textAlign: "center",
         }}
       >
         Customer Testimonials
@@ -97,11 +103,6 @@ export default function TestimonialsSection() {
                     borderRadius: "16px",
                     padding: 3,
                     backgroundColor: "#ffffff",
-                    transition: "transform 0.3s, box-shadow 0.3s",
-                    "&:hover": {
-                      transform: "translateY(-5px)",
-                      boxShadow: "0 8px 25px rgba(0, 0, 0, 0.15)",
-                    }
                   }}
                 >
                   <CardContent>

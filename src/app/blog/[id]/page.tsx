@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Typography, CircularProgress, Alert, Box, Button } from "@mui/material";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 import Image from "next/image";
 
 interface BlogPost {
@@ -120,7 +120,11 @@ export default function BlogPostPage() {
                 alt={post.title}
                 width={800}
                 height={500}
-                style={{ width: "100%", borderRadius: "8px" }}
+                style={{
+                  maxWidth: "100%", // 🔹 Ограничиваем ширину
+                  height: "auto",   // 🔹 Поддерживаем пропорции
+                  borderRadius: "8px",
+                }}
                 priority
               />
             </Box>

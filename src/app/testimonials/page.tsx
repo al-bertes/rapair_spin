@@ -188,7 +188,6 @@ export default function TestimonialsPage() {
                     whileInView="visible"
                     viewport={{ once: true, amount: 0.2 }}
                     variants={fadeInUp}
-                    whileHover={{ scale: 1.05 }}
                   >
                     <Card
                       elevation={3}

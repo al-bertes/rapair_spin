@@ -43,11 +43,9 @@ export default function Services() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  // Track only the currently flipped card
   const [flippedIndex, setFlippedIndex] = useState<number | null>(null);
 
   const handleFlip = (index: number) => {
-    // If the same card is clicked, close it. Otherwise, flip the new card.
     setFlippedIndex((prevIndex) => (prevIndex === index ? null : index));
   };
 
@@ -87,11 +85,14 @@ export default function Services() {
                 sx={{
                   position: "relative",
                   width: "100%",
-                  height: "250px",
+                  height: "260px",
                   transformStyle: "preserve-3d",
                   transition: "transform 0.8s",
                   transform: flippedIndex === index ? "rotateY(180deg)" : "rotateY(0deg)",
                   cursor: "pointer",
+                  "&:hover": {
+                    transform: flippedIndex === index ? "rotateY(180deg) scale(1.05)" : "scale(1.05)", // Увеличение карточки при наведении
+                  },
                 }}
                 onClick={() => handleFlip(index)}
               >
@@ -106,6 +107,10 @@ export default function Services() {
                     borderRadius: 2,
                     textAlign: "center",
                     backgroundColor: "#e3f2fd",
+                    transition: "box-shadow 0.3s ease-in-out",
+                    "&:hover": {
+                      boxShadow: 6, // Увеличенная тень при наведении
+                    },
                   }}
                 >
                   <CardMedia
@@ -142,6 +147,10 @@ export default function Services() {
                     flexDirection: "column",
                     justifyContent: "center",
                     padding: 2,
+                    transition: "box-shadow 0.3s ease-in-out",
+                    "&:hover": {
+                      boxShadow: 6, // Увеличенная тень при наведении
+                    },
                   }}
                 >
                   <Typography
