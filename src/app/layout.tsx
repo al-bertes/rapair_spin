@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="en">
       <Head>
         <title>Pavel&apos;s Appliance Repair | Reliable Appliance Repair in Twin Cities</title>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="./favicon.ico" />
         <link rel="icon" href="/favicon.png" type="image/png" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

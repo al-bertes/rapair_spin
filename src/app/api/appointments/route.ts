@@ -77,7 +77,7 @@ export async function GET() {
       return NextResponse.json({ error: "Invalid user ID" }, { status: 400 });
     }
 
-    const isAdmin = session.user.email === "art.bertes@gmail.com";
+    const isAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN;
 
     console.log("🔹 Authorized user:", session.user);
 
@@ -121,7 +121,7 @@ export async function GET() {
   }
 }
 
-const ADMIN_EMAIL = "art.bertes@gmail.com"; // Admin email
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN; // Admin email
 
 export async function DELETE(request: NextRequest) {
   try {

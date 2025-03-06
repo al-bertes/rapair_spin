@@ -34,7 +34,7 @@ const BlogSection = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const isAdmin = session?.user?.email === "art.bertes@gmail.com";
+  const isAdmin = session?.user?.email === process.env.NEXT_PUBLIC_ADMIN;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 

@@ -12,7 +12,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // ✅ Admin check
-    const isAdmin = session.user.email === "art.bertes@gmail.com";
+    const isAdmin = session.user.email === process.env.NEXT_PUBLIC_ADMIN;
     if (!isAdmin) {
       return NextResponse.json(
         { error: "Access denied. Only admins can delete blog posts." },

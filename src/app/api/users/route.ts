@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/authOptions";
 import { prisma } from "../../../../prisma/prisma-client";
 
-const ADMIN_EMAIL = "art.bertes@gmail.com"; // ✅ Admin email
+const ADMIN_EMAIL = process.env.NEXT_PUBLIC_ADMIN; // ✅ Admin email
 
 export async function GET() {
   try {

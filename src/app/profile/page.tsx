@@ -35,7 +35,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  const isAdmin = session?.user?.email === "art.bertes@gmail.com";
+  const isAdmin = session?.user?.email === process.env.NEXT_PUBLIC_ADMIN;
 
   const [activeSection, setActiveSection] = useState<string | null>(null);
 

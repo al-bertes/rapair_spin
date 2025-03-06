@@ -57,7 +57,7 @@ export default function TestimonialsPage() {
   }, []);
 
   useEffect(() => {
-    if (session?.user?.email === "art.bertes@gmail.com") {
+    if (session?.user?.email === process.env.NEXT_PUBLIC_ADMIN ) {
       setIsAdmin(true);
     } else {
       setIsAdmin(false);

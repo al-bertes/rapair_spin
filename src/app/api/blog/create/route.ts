@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     // ✅ Admin check by email
-    if (session.user.email !== "art.bertes@gmail.com") {
+    if (session.user.email !== process.env.NEXT_PUBLIC_ADMIN) {
       console.error("❌ Unauthorized access attempt by:", session.user.email);
       return NextResponse.json(
         { error: "Access denied. Only the admin can create blog posts." },
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
 
     // ✅ Get admin user from database
     const adminUser = await prisma.user.findUnique({
-      where: { email: "art.bertes@gmail.com" },
+      where: { email: process.env.NEXT_PUBLIC_ADMIN },
     });
 
     if (!adminUser) {
