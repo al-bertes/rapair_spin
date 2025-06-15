@@ -11,16 +11,15 @@ import {
   Box,
   Drawer,
   List,
-  ListItem,
   ListItemText,
   Button,
   Container,
   Stack,
+  ListItemButton,
 } from "@mui/material";
-import { Login, PersonAdd, Menu, Close } from "@mui/icons-material";
+import { Login, PersonAdd, Menu, Close, AccountCircle, Build, Logout, MenuBook, Reviews } from "@mui/icons-material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import MenuItemLink from "@/app/components/MenuItemLink";
 import { motion } from "framer-motion";
 
 const menuItems = [
@@ -180,42 +179,159 @@ export default function Header() {
             )}
           </Box>
 
+
           <Drawer anchor="right" open={isMenuOpen} onClose={closeMenu}>
             <Box
               sx={{
-                width: 250,
+                width: 280,
                 padding: 2,
                 display: "flex",
                 flexDirection: "column",
                 height: "100%",
-                backgroundColor: "#f9f9f9",
+                backgroundColor: "#fff",
               }}
             >
               <IconButton onClick={closeMenu} sx={{ alignSelf: "flex-end" }}>
-                <Close />
+                <Close sx={{ fontSize: 28 }} />
               </IconButton>
-              <List>
+
+              <List sx={{ mt: 1 }}>
                 {menuItems.map((item) => (
-                  <MenuItemLink
+                  <ListItemButton
                     key={item.text}
+                    component={Link}
                     href={item.href}
-                    text={item.text}
-                    closeMenu={closeMenu}
-                  />
+                    onClick={closeMenu}
+                    sx={{
+                      borderRadius: 2,
+                      "&:hover": { backgroundColor: "#f5f5f5" },
+                    }}
+                  >
+                    {/* Добавляем иконки */}
+                    {item.text === "Services" && <Build sx={{ mr: 1, color: "#1976d2" }} />}
+                    {item.text === "Testimonials" && <Reviews sx={{ mr: 1, color: "#1976d2" }} />}
+                    {item.text === "Blog" && <MenuBook sx={{ mr: 1, color: "#1976d2" }} />}
+
+                    <ListItemText
+                      primary={item.text}
+                      primaryTypographyProps={{
+                        fontSize: 16,
+                        fontWeight: 500,
+                        sx: { color: "#333" },
+                      }}
+                    />
+                  </ListItemButton>
                 ))}
-                <MenuItemLink
+
+                <ListItemButton
+                  component={Link}
                   href={isAuthenticated ? "/profile" : "/login"}
-                  text="Schedule Repair"
-                  closeMenu={closeMenu}
-                />
-                {isAuthenticated && (
-                  <ListItem  onClick={handleLogout}>
-                    <ListItemText primary="Logout" />
-                  </ListItem>
-                )}
+                  onClick={closeMenu}
+                  sx={{
+                    borderRadius: 2,
+                    "&:hover": { backgroundColor: "#f5f5f5" },
+                  }}
+                >
+                  <Build sx={{ mr: 1, color: "#1976d2" }} />
+                  <ListItemText
+                    primary="Schedule Repair"
+                    primaryTypographyProps={{
+                      fontSize: 16,
+                      fontWeight: 500,
+                      sx: { color: "#333" },
+                    }}
+                  />
+                </ListItemButton>
               </List>
+
+              {/* Блок кнопок логина / профиля */}
+              <Box sx={{ mt: 3 }}>
+                {status === "loading" ? (
+                  <Typography variant="body2" align="center">
+                    Loading...
+                  </Typography>
+                ) : !isAuthenticated ? (
+                  <Stack spacing={1.5}>
+                    <Button
+                      fullWidth
+                      variant="text"
+                      startIcon={<Login sx={{ color: "#1976d2" }} />}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: 15,
+                        borderRadius: 2,
+                        fontWeight: 500,
+                        color: "#333",
+                      }}
+                      onClick={() => {
+                        router.push("/login");
+                        closeMenu();
+                      }}
+                    >
+                      Sign In
+                    </Button>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      startIcon={<PersonAdd />}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: 15,
+                        borderRadius: 2,
+                        fontWeight: 500,
+                        backgroundColor: "#1976d2",
+                        "&:hover": { backgroundColor: "#1565c0" },
+                      }}
+                      onClick={() => {
+                        router.push("/register");
+                        closeMenu();
+                      }}
+                    >
+                      Sign Up
+                    </Button>
+                  </Stack>
+                ) : (
+                  <Stack spacing={1.5}>
+                    <Button
+                      fullWidth
+                      variant="text"
+                      startIcon={<AccountCircle sx={{ color: "#1976d2" }} />}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: 15,
+                        borderRadius: 2,
+                        fontWeight: 500,
+                        color: "#333",
+                      }}
+                      onClick={() => {
+                        router.push("/profile");
+                        closeMenu();
+                      }}
+                    >
+                      Profile
+                    </Button>
+                    <Button
+                      fullWidth
+                      variant="text"
+                      startIcon={<Logout sx={{ color: "#d32f2f" }} />}
+                      sx={{
+                        textTransform: "none",
+                        fontSize: 15,
+                        borderRadius: 2,
+                        fontWeight: 500,
+                        color: "#d32f2f",
+                      }}
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </Button>
+                  </Stack>
+                )}
+              </Box>
             </Box>
           </Drawer>
+
+
         </Toolbar>
       </Container>
     </AppBar>

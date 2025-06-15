@@ -9,7 +9,6 @@ const Footer = () => {
     <Box
       component="footer"
       sx={{
-
         backgroundColor: "#1976d2",
         color: "#ffffff",
         py: 6,
@@ -17,10 +16,10 @@ const Footer = () => {
         borderTop: "1px solid #ddd",
         display: "flex",
         flexDirection: "column",
-        minHeight: "250px", // Минимальная высота футера
+        minHeight: "250px",
       }}
     >
-      <Container sx={{ flex: "1 1 auto" }}> {/* Контент растягивается, оставляя место внизу */}
+      <Container sx={{ flex: "1 1 auto" }}>
         <Grid container spacing={4} justifyContent="center">
           <Grid item xs={12} sm={6} md={4}>
             <motion.div
@@ -154,7 +153,6 @@ const Footer = () => {
         </Grid>
       </Container>
 
-      {/* Копирайт теперь прижат к низу */}
       <Box sx={{ textAlign: "center", mt: "auto", py: 2 }}>
         <Typography
           variant="body2"
@@ -164,6 +162,30 @@ const Footer = () => {
           }}
         >
           © {new Date().getFullYear()} Pavel&apos;s Appliance Repair. All rights reserved.
+        </Typography>
+
+        <Typography
+          variant="body2"
+          sx={{
+            fontFamily: "'Poppins', sans-serif",
+            color: "#e0e0e0",
+            mt: 0.5,
+          }}
+        >
+          Website by{" "}
+          <Link
+            href="https://dev-mosaic.com/"
+            underline="hover"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{
+              color: "#e0e0e0",
+              transition: "color 0.3s",
+              "&:hover": { color: "#90caf9" },
+            }}
+          >
+            Dev Mosaic
+          </Link>
         </Typography>
       </Box>
     </Box>
