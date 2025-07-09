@@ -41,7 +41,7 @@ const Footer = () => {
               <Typography variant="body1" sx={{ mb: 1 }}>
                 📞 Call Us:{" "}
                 <Link
-                  href="tel:+17634853734"
+                  href="tel:+16129196205"
                   underline="none"
                   color="inherit"
                   sx={{
