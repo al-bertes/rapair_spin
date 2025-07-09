@@ -49,7 +49,7 @@ const Footer = () => {
                     "&:hover": { color: "#90caf9" },
                   }}
                 >
-                  +1 763-485-3734
+                  +1 612-919-62-05
                 </Link>
               </Typography>
               <Typography variant="body1" sx={{ mb: 1 }}>
