@@ -3,8 +3,11 @@
 import { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Typography, CircularProgress, Alert, Box, Button } from "@mui/material";
-import { jwtDecode } from "jwt-decode";
+// ❌ Удаляем jwtDecode, так как больше не читаем JWT вручную
+// import { jwtDecode } from "jwt-decode"; 
 import Image from "next/image";
+// ✅ Добавляем useSession
+import { useSession } from "next-auth/react"; 
 
 interface BlogPost {
   id: number;
@@ -13,17 +16,25 @@ interface BlogPost {
   imageUrl?: string;
 }
 
-interface DecodedToken {
-  id: number;
-}
+// ❌ Удаляем DecodedToken
+// interface DecodedToken {
+//   id: number;
+// }
 
 export default function BlogPostPage() {
   const { id } = useParams();
   const router = useRouter();
+  // 💡 1. Использование useSession для получения данных сессии
+  const { data: session, status } = useSession(); 
+  
   const [post, setPost] = useState<BlogPost | null>(null);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  // ❌ 2. Удаляем состояние isAdmin, оно будет вычисляемым
+  // const [isAdmin, setIsAdmin] = useState<boolean>(false); 
+
+  // 💡 3. Вычисляем isAdmin: Сравнение email сессии с публичным email администратора
+  const isAdmin = session?.user?.email === process.env.NEXT_PUBLIC_ADMIN;
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -47,32 +58,35 @@ export default function BlogPostPage() {
       }
     };
 
-    const checkAdmin = () => {
-      const token = localStorage.getItem("authToken");
-      if (token) {
-        try {
-          const decoded = jwtDecode<DecodedToken>(token);
-          if (decoded.id === 1) {
-            setIsAdmin(true);
-          }
-        } catch (error) {
-          console.error("Invalid token:", error);
-        }
-      }
-    };
+    // ❌ 4. Удаляем старую функцию checkAdmin, которая использовала localStorage
+    // const checkAdmin = () => {
+    //   const token = localStorage.getItem("authToken");
+    //   if (token) {
+    //     try {
+    //       const decoded = jwtDecode<DecodedToken>(token);
+    //       if (decoded.id === 1) {
+    //         setIsAdmin(true);
+    //       }
+    //     } catch (error) {
+    //       console.error("Invalid token:", error);
+    //     }
+    //   }
+    // };
 
     fetchPost();
-    checkAdmin();
+    // ❌ Удаляем вызов checkAdmin()
   }, [id]);
 
   const handleDelete = async () => {
-    const token = localStorage.getItem("authToken");
+    // 💡 Примечание: Если ваш API-роут для удаления полагается на куки Next-Auth, 
+    // вам не нужно передавать "Authorization: Bearer ${token}". Оставляем, если он нужен.
+    const token = localStorage.getItem("authToken"); 
     try {
       const response = await fetch(`/api/blog/delete`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${token}`, 
         },
         body: JSON.stringify({ id: Number(id) }),
       });
@@ -93,7 +107,8 @@ export default function BlogPostPage() {
     }
   };
 
-  if (isLoading) {
+  // 💡 5. Обновляем условие загрузки: ждем, пока загрузится сессия И пост
+  if (status === "loading" || isLoading) { 
     return (
       <Container maxWidth="md" sx={{ mt: 4, textAlign: "center" }}>
         <CircularProgress />
@@ -121,8 +136,8 @@ export default function BlogPostPage() {
                 width={800}
                 height={500}
                 style={{
-                  maxWidth: "100%", // 🔹 Ограничиваем ширину
-                  height: "auto",   // 🔹 Поддерживаем пропорции
+                  maxWidth: "100%", 
+                  height: "auto",   
                   borderRadius: "8px",
                 }}
                 priority
@@ -159,6 +174,7 @@ export default function BlogPostPage() {
               Read More Articles
             </Button>
           </Box>
+          {/* 💡 Теперь isAdmin вычисляется на основе данных сессии */}
           {isAdmin && (
             <Box sx={{ mt: 4, textAlign: "right" }}>
               <Button

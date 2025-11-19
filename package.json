@@ -24,6 +24,7 @@
     "axios": "^1.7.9",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^3.0.0",
+    "cloudinary": "^2.8.0",
     "dayjs": "^1.11.13",
     "dotenv-cli": "^8.0.0",
     "flatpickr": "^4.6.13",

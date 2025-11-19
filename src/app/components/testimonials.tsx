@@ -37,7 +37,7 @@ export default function TestimonialsSection() {
         if (!response.ok) throw new Error("Failed to load testimonials");
 
         const data = await response.json();
-        setTestimonials(data.slice(-2)); 
+        setTestimonials(data.slice(0, 2)); 
       } catch (error) {
         console.error("❌ Error loading testimonials:", error);
       } finally {
