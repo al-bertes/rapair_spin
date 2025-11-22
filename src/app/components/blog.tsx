@@ -38,7 +38,7 @@ const Blog = () => {
         const data = await response.json();
         console.log(data);
         if (data && !data.error) {
-          setLatestBlog(data[0]);
+          setLatestBlog(data[data.length - 1]);
         } else {
           setLatestBlog(null);
         }

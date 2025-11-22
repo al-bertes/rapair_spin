@@ -3,11 +3,11 @@
 import { useEffect, useState, Suspense } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Container, Typography, CircularProgress, Alert, Box, Button } from "@mui/material";
-// ❌ Удаляем jwtDecode, так как больше не читаем JWT вручную
-// import { jwtDecode } from "jwt-decode"; 
-import Image from "next/image";
 // ✅ Добавляем useSession
 import { useSession } from "next-auth/react"; 
+import Image from "next/image";
+// ✅ Добавляем Head для SEO (если используете Pages Router)
+import Head from "next/head"; 
 
 interface BlogPost {
   id: number;
@@ -16,24 +16,18 @@ interface BlogPost {
   imageUrl?: string;
 }
 
-// ❌ Удаляем DecodedToken
-// interface DecodedToken {
-//   id: number;
-// }
-
 export default function BlogPostPage() {
   const { id } = useParams();
   const router = useRouter();
+  
   // 💡 1. Использование useSession для получения данных сессии
   const { data: session, status } = useSession(); 
   
   const [post, setPost] = useState<BlogPost | null>(null);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  // ❌ 2. Удаляем состояние isAdmin, оно будет вычисляемым
-  // const [isAdmin, setIsAdmin] = useState<boolean>(false); 
 
-  // 💡 3. Вычисляем isAdmin: Сравнение email сессии с публичным email администратора
+  // 💡 2. Вычисляем isAdmin: Сравнение email сессии с публичным email администратора
   const isAdmin = session?.user?.email === process.env.NEXT_PUBLIC_ADMIN;
 
   useEffect(() => {
@@ -58,34 +52,17 @@ export default function BlogPostPage() {
       }
     };
 
-    // ❌ 4. Удаляем старую функцию checkAdmin, которая использовала localStorage
-    // const checkAdmin = () => {
-    //   const token = localStorage.getItem("authToken");
-    //   if (token) {
-    //     try {
-    //       const decoded = jwtDecode<DecodedToken>(token);
-    //       if (decoded.id === 1) {
-    //         setIsAdmin(true);
-    //       }
-    //     } catch (error) {
-    //       console.error("Invalid token:", error);
-    //     }
-    //   }
-    // };
-
     fetchPost();
-    // ❌ Удаляем вызов checkAdmin()
-  }, [id]);
+  }, [id, isAdmin]);
 
   const handleDelete = async () => {
-    // 💡 Примечание: Если ваш API-роут для удаления полагается на куки Next-Auth, 
-    // вам не нужно передавать "Authorization: Bearer ${token}". Оставляем, если он нужен.
     const token = localStorage.getItem("authToken"); 
     try {
       const response = await fetch(`/api/blog/delete`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
+          // Оставляем токен, если ваш бэкенд его требует для DELETE
           Authorization: `Bearer ${token}`, 
         },
         body: JSON.stringify({ id: Number(id) }),
@@ -107,7 +84,7 @@ export default function BlogPostPage() {
     }
   };
 
-  // 💡 5. Обновляем условие загрузки: ждем, пока загрузится сессия И пост
+  // 💡 Обновляем условие загрузки: ждем, пока загрузится сессия И пост
   if (status === "loading" || isLoading) { 
     return (
       <Container maxWidth="md" sx={{ mt: 4, textAlign: "center" }}>
@@ -123,10 +100,22 @@ export default function BlogPostPage() {
       </Container>
     );
   }
+  
+  // 💡 SEO: Вычисляем мета-описание
+  const metaDescription = post?.content ? post.content.substring(0, 150) + "..." : "Read the full blog post on appliance repair.";
+  const postTitle = post?.title || "Blog Post Not Found";
 
   return (
     <Suspense fallback={<CircularProgress />}>
-      <Container maxWidth="sm" sx={{ padding: 0, mt: 4, mb: 4 }}>
+        {/* ✅ Добавляем Head для SEO */}
+        <Head>
+            <title>{postTitle} | Pavel&apos;s Appliance Repair Blog</title>
+            <meta name="description" content={metaDescription} />
+            {/* Добавьте канонический URL, если используете Next.js Pages Router */}
+            <link rel="canonical" href={`https://www.pavelsappliancerepair.com/blog/${id}`} />
+        </Head>
+        
+        <Container maxWidth="sm" sx={{ padding: 0, mt: 4, mb: 4 }}>
         <Box>
           {post?.imageUrl && (
             <Box sx={{ mt: 4 }}>
@@ -135,6 +124,7 @@ export default function BlogPostPage() {
                 alt={post.title}
                 width={800}
                 height={500}
+                // Примечание: Убедитесь, что domain: 'res.cloudinary.com' добавлен в next.config.js
                 style={{
                   maxWidth: "100%", 
                   height: "auto",   
@@ -174,7 +164,7 @@ export default function BlogPostPage() {
               Read More Articles
             </Button>
           </Box>
-          {/* 💡 Теперь isAdmin вычисляется на основе данных сессии */}
+          {/* ✅ Кнопка удаления отображается только для администратора */}
           {isAdmin && (
             <Box sx={{ mt: 4, textAlign: "right" }}>
               <Button
