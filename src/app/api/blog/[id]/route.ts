@@ -13,8 +13,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const postId = parseInt(id, 10);
+    if (isNaN(postId)) {
+        return NextResponse.json(
+            { error: "Invalid Post ID format" },
+            { status: 400 }
+        );
+    }
+    
+    // 💡 ИЗМЕНЕНИЕ: Используем 'select' или 'include' для гарантии получения всех полей
     const post = await prisma.blogPost.findUnique({
-      where: { id: parseInt(id, 10) },
+      where: { id: postId },
+      // ✅ Явно указываем, какие поля нам нужны (включая imageUrl)
+      select: {
+          id: true,
+          title: true,
+          content: true,
+          imageUrl: true, // <-- ЭТО КРИТИЧНОЕ ПОЛЕ
+          authorId: true, // ID автора (для внутренних нужд)
+          createdAt: true, 
+          // Если на странице поста нужно имя автора:
+          author: {
+              select: {
+                  name: true,
+              }
+          }
+      },
     });
 
     if (!post) {
